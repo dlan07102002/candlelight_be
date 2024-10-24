@@ -20,54 +20,60 @@ import lombok.Data;
 @Entity
 @Table(name = "orders")
 public class Order {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id")
-    private int orderId;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "order_id")
+        private int orderId;
 
-    @Column(name = "created_at")
-    private Date createdAt;
+        @Column(name = "created_at")
+        private Date createdAt;
 
-    @Column(name = "order_address", length = 512)
-    private String orderAddress;
+        @Column(name = "order_address", length = 512)
+        private String orderAddress;
 
-    @Column(name = "delivery_address", length = 512)
-    private String deliveryAddress;
+        @Column(name = "delivery_address", length = 512)
+        private String deliveryAddress;
 
-    @Column(name = "delivery_price")
-    private double deliveryPrice;
+        @Column(name = "delivery_cost")
+        private double deliveryCost;
 
-    @Column(name = "total_price")
-    private double totalPrice;
+        @Column(name = "payment_cost")
+        private double paymentCost;
 
-    @Column(name = "delivery_status")
-    private String deliveryStatus;
+        @Column(name = "total_product_price")
+        private double totalProductPrice;
 
-    @Column(name = "payment_status")
-    private String paymentStatus;
+        @Column(name = "total_price")
+        private double totalPrice;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {
-            CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH
-    })
-    @JoinColumn(name = "user_id", nullable = false)
+        @Column(name = "delivery_status")
+        private String deliveryStatus;
 
-    private User user;
+        @Column(name = "payment_status")
+        private String paymentStatus;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<OrderDetail> orderDetailList;
+        @ManyToOne(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        @JoinColumn(name = "user_id", nullable = false)
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {
-            CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH
-    })
-    @JoinColumn(name = "delivery_form_id")
-    private DeliveryForm deliveryForm;
+        private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, cascade = {
-            CascadeType.PERSIST, CascadeType.MERGE,
-            CascadeType.DETACH, CascadeType.REFRESH
-    })
-    @JoinColumn(name = "payment_form_id")
-    private PaymentForm paymentForm;
+        @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+        private List<OrderDetail> orderDetailList;
+
+        @ManyToOne(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        @JoinColumn(name = "delivery_method_id")
+        private DeliveryMethod deliveryMethod;
+
+        @ManyToOne(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        @JoinColumn(name = "payment_method_id")
+        private PaymentMethod paymentMethod;
 }

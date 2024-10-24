@@ -2,6 +2,8 @@ package vn.duclan.candlelight_be.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +27,7 @@ public class Category {
     private int categoryId;
 
     @Column(name = "category_name", length = 256)
-    private int categoryName;
+    private String categoryName;
 
     @ManyToMany(fetch = FetchType.LAZY, cascade = {
             CascadeType.PERSIST, CascadeType.MERGE,
@@ -34,6 +36,7 @@ public class Category {
     // FK of product_category point to Product entity by @JoinColumn(name =
     // "product_id")
     @JoinTable(name = "product_category", joinColumns = @JoinColumn(name = "category_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
-    List<Product> productList;
+    @JsonIgnore
+    private List<Product> productList;
 
 }
