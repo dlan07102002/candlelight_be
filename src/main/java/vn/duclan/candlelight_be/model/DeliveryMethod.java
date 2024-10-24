@@ -15,25 +15,25 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "payment_forms")
-public class PaymentForm {
+@Table(name = "delivery_methods")
+public class DeliveryMethod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_form_id")
-    private int paymentFormId;
+    @Column(name = "delivery_method_id")
+    private int deliveryMethodId;
 
-    @Column(name = "payment_form_name")
-    private String paymentFormName;
-
-    @Column(name = "payment_cost")
-    private double paymentCost;
+    @Column(name = "delivery_method_name")
+    private String deliveryMethodName;
 
     @Column(name = "description")
     private String description;
 
-    @OneToMany(mappedBy = "paymentForm", fetch = FetchType.LAZY, cascade = {
+    @Column(name = "delivery_cost")
+    private double deliveryCost;
+
+    @OneToMany(mappedBy = "deliveryMethod", fetch = FetchType.LAZY, cascade = {
             CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH
     })
-    private List<Order> orderList;
+    List<Order> orderList;
 }

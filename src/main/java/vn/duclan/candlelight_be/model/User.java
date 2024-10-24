@@ -59,7 +59,7 @@ public class User {
         })
         private List<Order> orderList;
 
-        @ManyToMany(fetch = FetchType.LAZY, cascade = {
+        @ManyToMany(cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
