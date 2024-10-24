@@ -1,27 +1,69 @@
 package vn.duclan.candlelight_be.model;
 
-import java.util.List;
-
+import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.List;
+
+@Entity
 @Data
+@Table(name = "users")
 public class User {
-    private String userId;
-    private String lastName;
-    private String firstName;
-    private String username;
-    private String password;
-    private boolean gender;
-    private String email;
-    private String phoneNumber;
-    private String orderAddress;
-    private String deliveryAddress;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "user_id")
+        private int userId;
 
-    private List<Role> roleList;
+        @Column(name = "last_name")
+        private String lastName;
 
-    private List<Order> orderList;
+        @Column(name = "first_name")
+        private String firstName;
 
-    private List<Wishlist> wishlists;
+        @Column(name = "username")
+        private String username;
 
-    private List<Review> reviewList;
+        @Column(name = "password", length = 512)
+        private String password;
+
+        @Column(name = "gender")
+        private boolean gender;
+
+        @Column(name = "email")
+        private String email;
+
+        @Column(name = "phone_number")
+        private String phoneNumber;
+
+        @Column(name = "order_address")
+        private String orderAddress;
+
+        @Column(name = "delivery_address")
+        private String deliveryAddress;
+
+        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        private List<Review> reviewList;
+
+        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        private List<Wishlist> wishlists;
+
+        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        private List<Order> orderList;
+
+        @ManyToMany(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        })
+        @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
+        private List<Role> danhSachQuyen;
+
 }
