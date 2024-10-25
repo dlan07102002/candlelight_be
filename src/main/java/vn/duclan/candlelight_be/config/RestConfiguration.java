@@ -12,18 +12,26 @@ import vn.duclan.candlelight_be.model.Category;
 
 @Configuration
 public class RestConfiguration implements RepositoryRestConfigurer {
+    private String url = "http://localhost:3000";
 
     @Autowired
     private EntityManager entityManager;
 
     @Override
     public void configureRepositoryRestConfiguration(RepositoryRestConfiguration config, CorsRegistry cors) {
+
         // Expose ID in Repository get from starter data rest
         config.exposeIdsFor(
                 entityManager.getMetamodel().getEntities().stream()
                         // method reference ::
                         .map(Type::getJavaType)
                         .toArray(Class[]::new));
+
+        // CORS configuration, agree FE to access BE
+        // /** mean all url
+        cors.addMapping("/**")
+                .allowedOrigins(url)
+                .allowedMethods("GET", "POST", "PUT", "DELETE");
 
         // config disable specific http methods
         // HttpMethod[] disabledMethod = { HttpMethod.POST, HttpMethod.PUT,
