@@ -12,7 +12,7 @@ import vn.duclan.candlelight_be.model.Category;
 
 @Configuration
 public class RestConfiguration implements RepositoryRestConfigurer {
-    private String url = "http://localhost:3000";
+    private String url = "http://localhost:5173";
 
     @Autowired
     private EntityManager entityManager;

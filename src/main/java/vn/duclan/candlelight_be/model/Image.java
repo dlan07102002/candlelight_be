@@ -31,9 +31,9 @@ public class Image {
     @Column(name = "link")
     private String link;
     // Longtext to store big data
-    @Column(name = "data", columnDefinition = "LONGTEXT")
+    @Column(name = "image_data", columnDefinition = "LONGBLOB")
     @Lob
-    private String data;
+    private String imageData;
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {
             CascadeType.PERSIST, CascadeType.MERGE,
