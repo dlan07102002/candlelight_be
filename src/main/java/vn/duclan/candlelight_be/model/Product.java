@@ -29,19 +29,25 @@ public class Product {
         private String productName;
 
         @Column(name = "description", columnDefinition = "text")
-        String description;
+        private String description;
 
         @Column(name = "list_price")
-        double listPrice;
+        private double listPrice;
 
         @Column(name = "sell_price")
-        double sellPrice;
+        private double sellPrice;
 
         @Column(name = "quantity")
         private int quantity;
 
         @Column(name = "rate_average")
         private double rateAverage;
+
+        // @Column(name = "brand")
+        // private String brand;
+
+        // @Column(name = "weight")
+        // private double weight;
 
         @ManyToMany(
                         // fetch = FetchType.LAZY, cascade = {
