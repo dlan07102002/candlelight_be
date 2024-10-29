@@ -1,9 +1,16 @@
 package vn.duclan.candlelight_be.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
 import java.util.List;
+
+enum Gender {
+        MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY
+}
 
 @Entity
 @Data
@@ -21,15 +28,19 @@ public class User {
         private String firstName;
 
         @Column(name = "username")
+        @NotEmpty(message = "Username can not be empty")
         private String username;
 
         @Column(name = "password", length = 512)
+        @NotEmpty(message = "Password can not be empty")
         private String password;
 
+        @Enumerated(EnumType.STRING)
         @Column(name = "gender")
-        private boolean gender;
+        private Gender gender;
 
         @Column(name = "email")
+        @Email(message = "Email is not valid")
         private String email;
 
         @Column(name = "phone_number")

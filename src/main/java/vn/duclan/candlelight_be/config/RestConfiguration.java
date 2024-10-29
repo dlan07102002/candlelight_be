@@ -8,7 +8,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.Type;
-import vn.duclan.candlelight_be.model.Category;
 
 @Configuration
 public class RestConfiguration implements RepositoryRestConfigurer {
@@ -31,7 +30,9 @@ public class RestConfiguration implements RepositoryRestConfigurer {
         // /** mean all url
         cors.addMapping("/**")
                 .allowedOrigins(url)
-                .allowedMethods("GET", "POST", "PUT", "DELETE");
+                .allowedMethods("GET", "POST", "PUT", "DELETE")
+
+                .allowedHeaders("*");
 
         // config disable specific http methods
         // HttpMethod[] disabledMethod = { HttpMethod.POST, HttpMethod.PUT,
