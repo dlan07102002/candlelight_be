@@ -11,14 +11,19 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import vn.duclan.candlelight_be.filter.JwtFilter;
 import vn.duclan.candlelight_be.service.UserService;
 
 @Configuration
 public class WebSecurityConfig {
+    @Autowired
+    private JwtFilter filter;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -47,7 +52,9 @@ public class WebSecurityConfig {
                         // If using hasAuthority, in DB rolename is ADMIN, but if using hasRole, must
                         // saved as ROLE_ADMIN. hasAuthority does not auto add prefix ROLE
                         .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS).hasAuthority("ADMIN"));
+                        .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS).hasAuthority("ADMIN")
+                        .requestMatchers(HttpMethod.POST, Endpoints.ADMIN_POST_ENDPOINTS).hasAuthority("ADMIN"));
+        ;
         http.httpBasic(Customizer.withDefaults());
 
         http.cors(cors -> {
@@ -60,6 +67,9 @@ public class WebSecurityConfig {
             });
         });
 
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+        // add filter
+        http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
         http.csrf(csrf -> csrf.disable());
         return http.build();
 
