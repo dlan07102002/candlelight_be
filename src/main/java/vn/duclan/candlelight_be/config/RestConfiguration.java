@@ -28,11 +28,10 @@ public class RestConfiguration implements RepositoryRestConfigurer {
 
         // CORS configuration, agree FE to access BE
         // /** mean all url
-        cors.addMapping("/**")
-                .allowedOrigins(url)
-                .allowedMethods("GET", "POST", "PUT", "DELETE")
-
-                .allowedHeaders("*");
+        // cors.addMapping("/**")
+        // .allowedOrigins(url)
+        // .allowedMethods("GET", "POST", "PUT", "DELETE")
+        // .allowedHeaders("*");
 
         // config disable specific http methods
         // HttpMethod[] disabledMethod = { HttpMethod.POST, HttpMethod.PUT,

@@ -52,6 +52,12 @@ public class User {
         @Column(name = "delivery_address")
         private String deliveryAddress;
 
+        @Column(name = "is_activate", columnDefinition = "BOOLEAN")
+        private boolean isActivate;
+
+        @Column(name = "activate_code")
+        private String activateCode;
+
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
@@ -70,7 +76,7 @@ public class User {
         })
         private List<Order> orderList;
 
-        @ManyToMany(cascade = {
+        @ManyToMany(fetch = FetchType.EAGER, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
