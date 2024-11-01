@@ -4,11 +4,13 @@ import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -16,18 +18,43 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import vn.duclan.candlelight_be.model.Role;
+import vn.duclan.candlelight_be.model.User;
 
 @Component
 public class JwtService {
     // config secret key in application propeties
     private static final String SECRET_KEY = "9a4f2c8d3b7a1e6f45c8a0b3f267d8b1d4e6f3c8a9d2b5f8e3a9c8b5f6v8a3d9";
-    private static int jwtExpirationDate = 3600000; // 1h = 3600s and 3600*1000 = 3600000 milliseconds
+    private static long jwtExpirationDate = 3600000; // 1h = 3600s and 3600*1000 = 3600000 milliseconds
+    @Autowired
+    private UserService userService;
 
     // generate jwt base on username
     public String generateToken(String username) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("isAdmin", true);
-        claims.put("x", "ABC");
+        User user = userService.findByUsername(username);
+        List<Role> roleList = user.getRoleList();
+        boolean isAdmin = false;
+        boolean isStaff = false;
+        boolean isUser = false;
+        if (user != null && roleList.size() > 0) {
+            for (Role role : roleList) {
+                if (role.getRoleName().equals("ADMIN")) {
+                    isAdmin = true;
+                }
+                if (role.getRoleName().equals("STAFF")) {
+                    isStaff = true;
+                }
+                if (role.getRoleName().equals("USER")) {
+                    isUser = true;
+                }
+            }
+        }
+
+        claims.put("isAdmin", isAdmin);
+        claims.put("isStaff", isStaff);
+        claims.put("isUser", isUser);
+
         return createToken(claims, username);
     }
 
@@ -39,7 +66,7 @@ public class JwtService {
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
-                .issuedAt(new Date())
+                .issuedAt(currentDate)
                 .expiration(expireDate)
                 .signWith(key(), Jwts.SIG.HS256)
                 .compact();

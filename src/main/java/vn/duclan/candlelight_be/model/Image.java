@@ -11,6 +11,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Entity
@@ -30,6 +31,10 @@ public class Image {
 
     @Column(name = "link")
     private String link;
+
+    @Transient // Trường này sẽ không được lưu trong cơ sở dữ liệu
+    private String productId;
+
     // Longtext to store big data
     @Column(name = "image_data", columnDefinition = "LONGBLOB")
     @Lob
