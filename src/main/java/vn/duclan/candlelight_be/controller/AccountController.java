@@ -20,7 +20,6 @@ import vn.duclan.candlelight_be.security.JwtResponse;
 import vn.duclan.candlelight_be.security.LoginRequest;
 import vn.duclan.candlelight_be.service.AccountService;
 import vn.duclan.candlelight_be.service.JwtService;
-import vn.duclan.candlelight_be.service.UserService;
 
 @RestController
 @RequestMapping("/account")
@@ -32,15 +31,12 @@ public class AccountController {
     private AuthenticationManager authenticationManager;
 
     @Autowired
-    private UserService userService;
-
-    @Autowired
     private JwtService jwtService;
 
     @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
     @PostMapping("/register")
     public ResponseEntity<?> register(@Validated @RequestBody User user) {
-        System.out.println(user);
+        // System.out.println(user);
         // ?: unbounded wildcard.
         ResponseEntity<?> response = accountService.register(user);
         return response;
@@ -57,7 +53,8 @@ public class AccountController {
     @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
         try {
-            System.out.println(loginRequest.getUsername() + " " + loginRequest.getPassword());
+            // System.out.println(loginRequest.getUsername() + " " +
+            // loginRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
             if (authentication.isAuthenticated()) {

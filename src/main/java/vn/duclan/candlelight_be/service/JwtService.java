@@ -1,7 +1,5 @@
 package vn.duclan.candlelight_be.service;
 
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -89,6 +87,7 @@ public class JwtService {
     }
 
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
+
         final Claims claims = getAllClaimsFromToken(token);
         return claimsTFunction.apply(claims);
     }
@@ -100,15 +99,23 @@ public class JwtService {
     }
 
     // Extract isJWT expired
-    public boolean isJWTExpired(String token) {
+    public Boolean isJWTExpired(String token) {
         // :: -> method reference in Java 8
-        return getExpirationDate(token).before(new Date());
+        if (token == null) {
+            return true;
+
+        } else
+            return getExpirationDate(token).before(new Date());
     }
 
     // validation Token
-    public boolean validateToken(String token, UserDetails userDetails) {
+    public Boolean validateToken(String token, UserDetails userDetails) {
+        if (token == null) {
+            return false;
+        }
         final String username = getUsername(token);
         return (username.equals(userDetails.getUsername()) && !isJWTExpired(token));
+
     }
 
     // Extract Username

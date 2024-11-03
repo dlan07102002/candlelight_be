@@ -47,8 +47,17 @@ public class Order {
         private double totalPrice;
 
         @Column(name = "delivery_status")
+        // "Pending", //created but not delivery
+        // "Shipped",
+        // "In Transit",
+        // "Out for Delivery",
+        // "Delivered",
+        // "Returned",
+        // "Canceled",
+        // "Delayed"
         private String deliveryStatus;
 
+        // [Pending, Paid, Failed, Refunded, Canceled, Processing, Completed]
         @Column(name = "payment_status")
         private String paymentStatus;
 

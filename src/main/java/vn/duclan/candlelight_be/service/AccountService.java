@@ -47,7 +47,7 @@ public class AccountService {
         user.setActivate(false);
 
         // Insert user into DB
-        User registedUser = userRepository.save(user);
+        userRepository.save(user);
 
         // send email to User for activation account
         sendActiveEmail(user.getEmail(), user.getActivateCode());

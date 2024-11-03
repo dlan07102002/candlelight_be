@@ -3,7 +3,6 @@ package vn.duclan.candlelight_be.filter;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
@@ -37,21 +36,30 @@ public class JwtFilter extends OncePerRequestFilter {
         // Bearer to identity token
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-            username = jwtService.getUsername(token);
-
+            try {
+                username = jwtService.getUsername(token);
+            } catch (Exception e) {
+                System.out.println("Error extracting username from token: " + e.getMessage());
+            }
         }
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             // load userDetails by username
-            UserDetails userDetails = userService.loadUserByUsername(username);
-            // check isValidation token
-            if (jwtService.validateToken(token, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                        null, userDetails.getAuthorities());
-                // Get user and save user to request
-                // set authToken to securityContextHolder
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            try {
+                UserDetails userDetails = userService.loadUserByUsername(username);
+                // check isValidation token
+                if (userDetails != null && jwtService.validateToken(token, userDetails)) {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                            null, userDetails.getAuthorities());
+                    // Get user and save user to request
+                    // set authToken to securityContextHolder
+                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+
+                }
+            } catch (Exception e) {
+                System.out.println(e);
             }
+
             // return (username.equals(userDetails.getUsername()) &&
             // jwtService.isJWTExpired(token));
         }

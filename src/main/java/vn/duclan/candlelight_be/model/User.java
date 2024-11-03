@@ -53,7 +53,7 @@ public class User {
         private String deliveryAddress;
 
         @Column(name = "is_activate", columnDefinition = "BOOLEAN")
-        private boolean isActivate;
+        private boolean isActivate = false;
 
         @Column(name = "activate_code")
         private String activateCode;
