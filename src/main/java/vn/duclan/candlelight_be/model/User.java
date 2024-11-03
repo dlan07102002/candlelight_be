@@ -2,7 +2,6 @@ package vn.duclan.candlelight_be.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Data;
 
@@ -52,8 +51,9 @@ public class User {
         @Column(name = "delivery_address")
         private String deliveryAddress;
 
+        // Boolean chấp nhận giá trị null
         @Column(name = "is_activate", columnDefinition = "BOOLEAN")
-        private boolean isActivate = false;
+        private Boolean isActivate;
 
         @Column(name = "activate_code")
         private String activateCode;

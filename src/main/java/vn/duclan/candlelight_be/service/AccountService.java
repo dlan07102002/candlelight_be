@@ -44,7 +44,7 @@ public class AccountService {
 
         // set Activate code
         user.setActivateCode(generateActivateCode());
-        user.setActivate(false);
+        user.setIsActivate(false);
 
         // Insert user into DB
         userRepository.save(user);
@@ -99,13 +99,13 @@ public class AccountService {
             return ResponseEntity.badRequest().body("User is exists");
         }
 
-        if (user.isActivate()) {
+        if (user.getIsActivate()) {
             return ResponseEntity.badRequest().body(new Notification("The account has already been activated!"));
 
         }
 
         if (activateCode.equals(user.getActivateCode())) {
-            user.setActivate(true);
+            user.getIsActivate();
             userRepository.save(user);
             return ResponseEntity.ok(new Notification("Activation successful"));
         } else {
