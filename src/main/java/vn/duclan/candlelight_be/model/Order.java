@@ -14,6 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
@@ -40,9 +41,6 @@ public class Order {
         @Column(name = "payment_cost")
         private double paymentCost;
 
-        @Column(name = "total_product_price")
-        private double totalProductPrice;
-
         @Column(name = "total_price")
         private double totalPrice;
 
@@ -60,6 +58,9 @@ public class Order {
         // [Pending, Paid, Failed, Refunded, Canceled, Processing, Completed]
         @Column(name = "payment_status")
         private String paymentStatus;
+
+        @Transient
+        private int userId;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,

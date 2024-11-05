@@ -49,12 +49,10 @@ public class Product {
         // @Column(name = "weight")
         // private double weight;
 
-        @ManyToMany(
-                        // fetch = FetchType.LAZY, cascade = {
-                        // CascadeType.PERSIST, CascadeType.MERGE,
-                        // CascadeType.DETACH, CascadeType.REFRESH
-                        // }
-                        mappedBy = "productList")
+        @ManyToMany(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        }, mappedBy = "productList")
         // FK of product_category point to Product entity by @JoinColumn(name =
         // "product_id")
         // @JoinTable(name = "product_category", joinColumns = @JoinColumn(name =

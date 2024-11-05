@@ -14,7 +14,11 @@ public class Endpoints {
                         "/categories/**",
                         "/reviews",
                         "/orders",
+                        "/orders/**",
+                        "/order-detail",
+                        "/order-detail/**",
                         "/order-details",
+                        "/order-details/**",
 
                         "/wishlists",
                         "/users/search/existsByUsername",
@@ -26,12 +30,23 @@ public class Endpoints {
 
                         "/account/register",
                         "/account/login",
-                        "/admin/products",
-                        "/admin/products/**",
+                        "/api/order-detail",
+                        "/api/order-detail/**",
+
+                        // "/admin/products",
+                        // "/admin/products/**",
                         "/images",
                         "/images/**",
-                        "/admin/images",
-                        "/admin/images/**",
+                        // "/admin/images",
+                        // "/admin/images/**",
+                        "/order-detail",
+
+        };
+
+        public static final String[] USER_DELETE_ENDPOINTS = {
+                        "/order-details/",
+
+                        "/order-details/**",
 
         };
 
@@ -39,8 +54,6 @@ public class Endpoints {
                         "/",
                         "/users",
                         "/users/**",
-                        "/orders",
-                        "/orders/**"
 
         };
 
@@ -49,6 +62,13 @@ public class Endpoints {
                         "/products/**",
                         "/users",
                         "/users/**",
+                        "/admin/products",
+                        "/admin/products/**",
+                        "/admin/images",
+                        "/admin/images/**",
+
+                        "/api/order-detail",
+                        "/api/order-detail/**",
 
         };
 

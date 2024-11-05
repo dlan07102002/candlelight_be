@@ -52,6 +52,7 @@ public class JwtService {
         claims.put("isAdmin", isAdmin);
         claims.put("isStaff", isStaff);
         claims.put("isUser", isUser);
+        claims.put("uid", user.getUserId());
 
         return createToken(claims, username);
     }

@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.Data;
 
 @Data
@@ -29,6 +30,9 @@ public class OrderDetail {
         @Column(name = "sell_price")
         private double sellPrice;
 
+        @Transient // Trường này sẽ không được lưu trong cơ sở dữ liệu
+        private int productId;
+
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
@@ -40,6 +44,11 @@ public class OrderDetail {
         @JsonIgnore
         private Product product;
 
+        @Transient
+        private int orderId;
+
+        @Transient
+        private int userId;
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH

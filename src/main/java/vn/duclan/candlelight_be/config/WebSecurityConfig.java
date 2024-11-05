@@ -52,6 +52,8 @@ public class WebSecurityConfig {
                         // If using hasAuthority, in DB rolename is ADMIN, but if using hasRole, must
                         // saved as ROLE_ADMIN. hasAuthority does not auto add prefix ROLE
                         .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, Endpoints.USER_DELETE_ENDPOINTS)
+                        .hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS).hasAuthority("ADMIN")
                         .requestMatchers(HttpMethod.POST, Endpoints.ADMIN_POST_ENDPOINTS).hasAuthority("ADMIN"));
         ;
