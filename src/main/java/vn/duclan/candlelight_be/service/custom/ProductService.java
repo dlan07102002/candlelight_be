@@ -27,7 +27,6 @@ public class ProductService {
         image.setProduct(product);
         image.setImageData("data:image/png;base64," + image.getImageData());
         imageRepository.save(image);
-        // imageRepository.save(image);
     }
 
     public void save(Product product) {

@@ -27,7 +27,7 @@ public class Image {
     private String imageName;
 
     @Column(name = "icon")
-    private boolean icon = false;
+    private Boolean icon = false;
 
     @Column(name = "link")
     private String link;

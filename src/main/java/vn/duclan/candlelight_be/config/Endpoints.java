@@ -15,8 +15,7 @@ public class Endpoints {
                         "/reviews",
                         "/orders",
                         "/orders/**",
-                        "/order-detail",
-                        "/order-detail/**",
+
                         "/order-details",
                         "/order-details/**",
 
@@ -39,7 +38,13 @@ public class Endpoints {
                         "/images/**",
                         // "/admin/images",
                         // "/admin/images/**",
-                        "/order-detail",
+
+        };
+
+        public static final String[] USER_PATCH_ENDPOINTS = {
+
+                        "/order-details/",
+                        "/order-details/**",
 
         };
 
@@ -69,6 +74,10 @@ public class Endpoints {
 
                         "/api/order-detail",
                         "/api/order-detail/**",
+
+                        "/order-details/",
+
+                        "/order-details/**",
 
         };
 

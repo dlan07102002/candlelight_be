@@ -9,8 +9,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-// import jakarta.persistence.JoinColumn;
-// import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -28,8 +26,11 @@ public class Product {
         @Column(name = "product_name")
         private String productName;
 
-        @Column(name = "description", columnDefinition = "text")
+        @Column(name = "description")
         private String description;
+
+        @Column(name = "detail_description", columnDefinition = "text")
+        private String detailDescription;
 
         @Column(name = "list_price")
         private double listPrice;
@@ -41,7 +42,7 @@ public class Product {
         private int quantity;
 
         @Column(name = "rate_average")
-        private double rateAverage;
+        private Double rateAverage;
 
         // @Column(name = "brand")
         // private String brand;

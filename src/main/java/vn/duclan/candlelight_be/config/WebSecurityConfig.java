@@ -52,6 +52,8 @@ public class WebSecurityConfig {
                         // If using hasAuthority, in DB rolename is ADMIN, but if using hasRole, must
                         // saved as ROLE_ADMIN. hasAuthority does not auto add prefix ROLE
                         .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
+                        .requestMatchers(HttpMethod.PATCH, Endpoints.USER_PATCH_ENDPOINTS)
+                        .hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.DELETE, Endpoints.USER_DELETE_ENDPOINTS)
                         .hasAnyAuthority("USER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS).hasAuthority("ADMIN")
@@ -63,7 +65,7 @@ public class WebSecurityConfig {
             cors.configurationSource(request -> {
                 CorsConfiguration corsConfig = new CorsConfiguration();
                 corsConfig.addAllowedOrigin(Endpoints.FE_HOST);
-                corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE"));
+                corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE"));
                 corsConfig.addAllowedHeader("*");
                 return corsConfig;
             });
