@@ -20,6 +20,7 @@ import vn.duclan.candlelight_be.security.JwtResponse;
 import vn.duclan.candlelight_be.security.LoginRequest;
 import vn.duclan.candlelight_be.service.AccountService;
 import vn.duclan.candlelight_be.service.JwtService;
+import vn.duclan.candlelight_be.service.UserService;
 
 @RestController
 @RequestMapping("/account")
@@ -29,6 +30,9 @@ public class AccountController {
 
     @Autowired
     private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private JwtService jwtService;
@@ -57,7 +61,9 @@ public class AccountController {
             // loginRequest.getPassword());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-            if (authentication.isAuthenticated()) {
+            User user = userService.findByUsername(loginRequest.getUsername());
+            if (authentication.isAuthenticated()
+                    && user.getIsActivate()) {
                 final String jwt = jwtService.generateToken(loginRequest.getUsername());
                 return ResponseEntity.ok(new JwtResponse(jwt));
             }

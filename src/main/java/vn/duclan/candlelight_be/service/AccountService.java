@@ -105,7 +105,7 @@ public class AccountService {
         }
 
         if (activateCode.equals(user.getActivateCode())) {
-            user.getIsActivate();
+            user.setIsActivate(true);
             userRepository.save(user);
             return ResponseEntity.ok(new Notification("Activation successful"));
         } else {
