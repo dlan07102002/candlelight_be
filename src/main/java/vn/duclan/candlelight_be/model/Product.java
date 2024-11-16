@@ -29,17 +29,17 @@ public class Product {
         @Column(name = "description")
         private String description;
 
-        @Column(name = "detail_description", columnDefinition = "text")
+        @Column(name = "detail_description", columnDefinition = "MEDIUMTEXT")
         private String detailDescription;
 
         @Column(name = "list_price")
-        private double listPrice;
+        private Double listPrice;
 
         @Column(name = "sell_price")
-        private double sellPrice;
+        private Double sellPrice;
 
         @Column(name = "quantity")
-        private int quantity;
+        private Integer quantity;
 
         @Column(name = "rate_average")
         private Double rateAverage;
