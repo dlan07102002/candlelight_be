@@ -8,13 +8,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import jakarta.validation.Valid;
-import vn.duclan.candlelight_be.dao.UserRepository;
+import vn.duclan.candlelight_be.repository.UserRepository;
 import vn.duclan.candlelight_be.model.Notification;
 import vn.duclan.candlelight_be.model.User;
 
 @Service
 public class AccountService {
-
     private EmailServiceImpl emailService;
     private UserRepository userRepository;
     private BCryptPasswordEncoder passwordEncoder;
@@ -33,7 +32,7 @@ public class AccountService {
                     .body(new Notification("Username already exists. Please choose a different one."));
         }
 
-        if (userRepository.existsByUsername(user.getEmail())) {
+        if (userRepository.existsByEmail(user.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(new Notification("Email already exists. Please choose a different one."));
         }
@@ -52,7 +51,6 @@ public class AccountService {
         // send email to User for activation account
         sendActiveEmail(user.getEmail(), user.getActivateCode());
         return ResponseEntity.ok("Registration successful!");
-
     }
 
     private String generateActivateCode() {
@@ -94,7 +92,7 @@ public class AccountService {
     }
 
     public ResponseEntity<?> activate(String email, String activateCode) {
-        User user = userRepository.findByEmail(email);
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
         if (user == null) {
             return ResponseEntity.badRequest().body("User is exists");
         }

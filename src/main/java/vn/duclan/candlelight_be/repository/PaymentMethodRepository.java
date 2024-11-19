@@ -1,4 +1,4 @@
-package vn.duclan.candlelight_be.dao;
+package vn.duclan.candlelight_be.repository;
 
 import vn.duclan.candlelight_be.model.PaymentMethod;
 

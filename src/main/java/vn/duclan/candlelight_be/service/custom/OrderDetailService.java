@@ -5,12 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import vn.duclan.candlelight_be.dao.ImageRepository;
-import vn.duclan.candlelight_be.dao.OrderDetailRepository;
-import vn.duclan.candlelight_be.dao.OrderRepository;
-import vn.duclan.candlelight_be.dao.ProductRepository;
-import vn.duclan.candlelight_be.dao.UserRepository;
-import vn.duclan.candlelight_be.model.Image;
+import vn.duclan.candlelight_be.repository.ImageRepository;
+import vn.duclan.candlelight_be.repository.OrderDetailRepository;
+import vn.duclan.candlelight_be.repository.OrderRepository;
+import vn.duclan.candlelight_be.repository.ProductRepository;
+import vn.duclan.candlelight_be.repository.UserRepository;
 import vn.duclan.candlelight_be.model.Order;
 import vn.duclan.candlelight_be.model.OrderDetail;
 import vn.duclan.candlelight_be.model.Product;

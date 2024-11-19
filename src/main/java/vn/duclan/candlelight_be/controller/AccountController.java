@@ -62,11 +62,17 @@ public class AccountController {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
             User user = userService.findByUsername(loginRequest.getUsername());
-            if (authentication.isAuthenticated()
-                    && user.getIsActivate()) {
-                final String jwt = jwtService.generateToken(loginRequest.getUsername());
-                return ResponseEntity.ok(new JwtResponse(jwt));
+
+            if (!user.getIsActivate()) {
+                throw new RuntimeException("Please activate your account");
+            } else {
+                // Authenticated then login
+                if (authentication.isAuthenticated()) {
+                    final String jwt = jwtService.generateToken(loginRequest.getUsername());
+                    return ResponseEntity.ok(new JwtResponse(jwt));
+                }
             }
+
         } catch (AuthenticationException e) {
             // TODO: handle exception
             System.out.println("Authentication error: " + e);

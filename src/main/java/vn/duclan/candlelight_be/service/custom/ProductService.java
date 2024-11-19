@@ -3,8 +3,8 @@ package vn.duclan.candlelight_be.service.custom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import vn.duclan.candlelight_be.dao.ImageRepository;
-import vn.duclan.candlelight_be.dao.ProductRepository;
+import vn.duclan.candlelight_be.repository.ImageRepository;
+import vn.duclan.candlelight_be.repository.ProductRepository;
 import vn.duclan.candlelight_be.model.Image;
 import vn.duclan.candlelight_be.model.Product;
 
