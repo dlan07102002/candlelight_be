@@ -8,14 +8,11 @@ import lombok.Data;
 
 import java.util.List;
 
-enum Gender {
-        MALE, FEMALE, OTHER, PREFER_NOT_TO_SAY
-}
-
 @Entity
 @Data
 @Table(name = "users")
 public class User {
+
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "user_id")
@@ -60,9 +57,9 @@ public class User {
         @Column(name = "activate_code")
         private String activateCode;
 
-        @Column(name = "avatar", columnDefinition = "LONGBLOB")
-        @Lob
-        private String avatar;
+        // @Column(name = "avatar", columnDefinition = "LONGBLOB")
+        // @Lob
+        // private String avatar;
 
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,

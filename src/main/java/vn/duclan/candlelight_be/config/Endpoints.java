@@ -32,8 +32,6 @@ public class Endpoints {
                         "/api/order-detail",
                         "/api/order-detail/**",
 
-                        // "/admin/products",
-                        // "/admin/products/**",
                         "/images",
                         "/images/**",
                         // "/admin/images",
@@ -42,9 +40,10 @@ public class Endpoints {
         };
 
         public static final String[] USER_PATCH_ENDPOINTS = {
-
                         "/order-details/",
                         "/order-details/**",
+                        "/users",
+                        "/users/**"
 
         };
 

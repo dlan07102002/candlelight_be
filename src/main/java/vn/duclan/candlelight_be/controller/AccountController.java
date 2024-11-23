@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
+import vn.duclan.candlelight_be.dto.request.RegisterRequest;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
 import vn.duclan.candlelight_be.dto.response.JwtResponse;
 import vn.duclan.candlelight_be.exception.AppException;
@@ -43,11 +44,11 @@ public class AccountController {
 
     @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
     @PostMapping("/register")
-    public APIResponse<User> register(@Validated @RequestBody User user) {
+    public APIResponse<User> register(@Validated @RequestBody RegisterRequest request) {
         // System.out.println(user);
         // ?: unbounded wildcard.
         APIResponse<User> apiResponse = new APIResponse<>();
-        apiResponse.setResult(accountService.register(user));
+        apiResponse.setResult(accountService.register(request));
         // ResponseEntity<?> response =
         return apiResponse;
     }
@@ -78,7 +79,7 @@ public class AccountController {
 
             // Tạo token nếu xác thực thành công
             if (authentication.isAuthenticated()) {
-                String jwt = jwtService.generateToken(loginRequest.getUsername());
+                String jwt = accountService.login(loginRequest);
                 apiResponse.setCode(HttpStatus.OK.value());
                 apiResponse.setMessage("Login successful");
                 apiResponse.setResult(jwt);

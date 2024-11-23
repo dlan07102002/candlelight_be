@@ -38,6 +38,7 @@ public class JwtFilter extends OncePerRequestFilter {
             token = authHeader.substring(7);
             try {
                 username = jwtService.getUsername(token);
+
             } catch (Exception e) {
                 System.out.println("Error extracting username from token: " + e.getMessage());
             }
@@ -46,6 +47,7 @@ public class JwtFilter extends OncePerRequestFilter {
             // load userDetails by username
             try {
                 UserDetails userDetails = userService.loadUserByUsername(username);
+                System.out.println(userDetails);
                 // check isValidation token
                 if (userDetails != null && jwtService.validateToken(token, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,

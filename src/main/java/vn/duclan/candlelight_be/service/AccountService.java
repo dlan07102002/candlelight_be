@@ -1,43 +1,61 @@
 package vn.duclan.candlelight_be.service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import jakarta.validation.Valid;
+import vn.duclan.candlelight_be.repository.RoleRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
+import vn.duclan.candlelight_be.dto.request.LoginRequest;
+import vn.duclan.candlelight_be.dto.request.RegisterRequest;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
+import vn.duclan.candlelight_be.mapper.UserMapper;
 import vn.duclan.candlelight_be.model.Notification;
+import vn.duclan.candlelight_be.model.Role;
 import vn.duclan.candlelight_be.model.User;
 
 @Service
 public class AccountService {
     private EmailServiceImpl emailService;
     private UserRepository userRepository;
+    private RoleRepository roleRepository;
     private BCryptPasswordEncoder passwordEncoder;
+    private UserMapper userMapper;
 
     @Autowired
+    private JwtService jwtService;
+
     public AccountService(UserRepository userRepository, EmailServiceImpl emailService,
-            BCryptPasswordEncoder passwordEncoder) {
+            BCryptPasswordEncoder passwordEncoder, UserMapper userMapper, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
+        this.roleRepository = roleRepository;
     }
 
-    public User register(@Valid User user) {
-        if (userRepository.existsByUsername(user.getUsername())) {
+    public User register(@Valid RegisterRequest request) {
+
+        if (userRepository.existsByUsername(request.getUsername())) {
             // return ResponseEntity.badRequest()
             // .body(new Notification("Username already exists. Please choose a different
             // one."));
             throw new AppException(ErrorCode.USER_EXISTED);
         }
 
-        if (userRepository.existsByEmail(user.getEmail())) {
+        if (userRepository.existsByEmail(request.getEmail())) {
             // return ResponseEntity.badRequest()
             // .body(new Notification("Email already exists. Please choose a different
             // one."));
@@ -45,20 +63,37 @@ public class AccountService {
         }
 
         // Encoding password
-        String encryptPassword = passwordEncoder.encode(user.getPassword());
-        user.setPassword(encryptPassword);
+        String encryptPassword = passwordEncoder.encode(request.getPassword());
+        request.setPassword(encryptPassword);
 
         // set Activate code
-        user.setActivateCode(generateActivateCode());
-        user.setIsActivate(false);
-
-        // Insert user into DB
-        // userRepository.save(user);
+        request.setActivateCode(generateActivateCode());
+        request.setIsActivate(false);
 
         // send email to User for activation account
-        sendActiveEmail(user.getEmail(), user.getActivateCode());
+        sendActiveEmail(request.getEmail(), request.getActivateCode());
+        User user = userMapper.toUser(request);
+        Role userRole = new Role();
+
+        userRole.setRoleName("USER");
+        List<Role> roleList = new ArrayList<>();
+        roleList.add(roleRepository.findByRoleName("USER"));
+
+        user.setRoleList(roleList);
         // return ResponseEntity.ok("Registration successful!");
+
+        // Insert user into DB
+        userRepository.save(user);
+
         return user;
+    }
+
+    public String login(@Valid LoginRequest request) {
+
+        String jwt = jwtService.generateToken(request.getUsername());
+
+        return jwt;
+
     }
 
     private String generateActivateCode() {
