@@ -3,6 +3,7 @@ package vn.duclan.candlelight_be.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.util.List;
@@ -30,8 +31,9 @@ public class User {
         @NotEmpty(message = "Username can not be empty")
         private String username;
 
-        @Column(name = "password", length = 512)
+        @Column(name = "password")
         @NotEmpty(message = "Password can not be empty")
+        @Size(min = 8, max = 512)
         private String password;
 
         @Enumerated(EnumType.STRING)
@@ -39,7 +41,7 @@ public class User {
         private Gender gender;
 
         @Column(name = "email")
-        @Email(message = "Email is not valid")
+        @Email(message = "Invalid email address.")
         private String email;
 
         @Column(name = "phone_number")

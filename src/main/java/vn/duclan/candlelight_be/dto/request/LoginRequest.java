@@ -1,4 +1,4 @@
-package vn.duclan.candlelight_be.security;
+package vn.duclan.candlelight_be.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

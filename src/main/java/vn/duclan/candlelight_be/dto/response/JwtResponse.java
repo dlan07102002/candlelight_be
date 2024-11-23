@@ -1,4 +1,4 @@
-package vn.duclan.candlelight_be.security;
+package vn.duclan.candlelight_be.dto.response;
 
 public class JwtResponse {
 

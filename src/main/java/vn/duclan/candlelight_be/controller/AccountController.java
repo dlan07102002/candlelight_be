@@ -1,6 +1,7 @@
 package vn.duclan.candlelight_be.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import vn.duclan.candlelight_be.dto.request.LoginRequest;
+import vn.duclan.candlelight_be.dto.response.APIResponse;
+import vn.duclan.candlelight_be.dto.response.JwtResponse;
+import vn.duclan.candlelight_be.exception.AppException;
+import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.User;
-import vn.duclan.candlelight_be.security.JwtResponse;
-import vn.duclan.candlelight_be.security.LoginRequest;
 import vn.duclan.candlelight_be.service.AccountService;
 import vn.duclan.candlelight_be.service.JwtService;
 import vn.duclan.candlelight_be.service.UserService;
@@ -39,11 +43,13 @@ public class AccountController {
 
     @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
     @PostMapping("/register")
-    public ResponseEntity<?> register(@Validated @RequestBody User user) {
+    public APIResponse<User> register(@Validated @RequestBody User user) {
         // System.out.println(user);
         // ?: unbounded wildcard.
-        ResponseEntity<?> response = accountService.register(user);
-        return response;
+        APIResponse<User> apiResponse = new APIResponse<>();
+        apiResponse.setResult(accountService.register(user));
+        // ResponseEntity<?> response =
+        return apiResponse;
     }
 
     @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
@@ -55,30 +61,45 @@ public class AccountController {
 
     @PostMapping("/login")
     @CrossOrigin(origins = "http://localhost:5173")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<APIResponse<String>> login(@RequestBody LoginRequest loginRequest) {
+        APIResponse<String> apiResponse = new APIResponse<>();
+
         try {
-            // System.out.println(loginRequest.getUsername() + " " +
-            // loginRequest.getPassword());
+            // Authenticating
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-            User user = userService.findByUsername(loginRequest.getUsername());
 
+            // Check isActivate
+            User user = userService.findByUsername(loginRequest.getUsername());
             if (!user.getIsActivate()) {
-                throw new RuntimeException("Please activate your account");
-            } else {
-                // Authenticated then login
-                if (authentication.isAuthenticated()) {
-                    final String jwt = jwtService.generateToken(loginRequest.getUsername());
-                    return ResponseEntity.ok(new JwtResponse(jwt));
-                }
+                // "Account is not activated. Please activate your account."
+                throw new AppException(ErrorCode.ACTIVATION_ERROR);
             }
 
+            // Tạo token nếu xác thực thành công
+            if (authentication.isAuthenticated()) {
+                String jwt = jwtService.generateToken(loginRequest.getUsername());
+                apiResponse.setCode(HttpStatus.OK.value());
+                apiResponse.setMessage("Login successful");
+                apiResponse.setResult(jwt);
+                return ResponseEntity.ok(apiResponse);
+            }
+
+        } catch (AppException e) {
+            ErrorCode errorCode = e.getErrorCode();
+            apiResponse.setCode(errorCode.getCode());
+            apiResponse.setMessage(errorCode.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiResponse);
         } catch (AuthenticationException e) {
-            // TODO: handle exception
-            System.out.println("Authentication error: " + e);
-            return ResponseEntity.badRequest().body("Invalid username or passwrod");
+            apiResponse.setCode(ErrorCode.AUTHENTICATION_ERROR.getCode());
+            apiResponse.setMessage(ErrorCode.AUTHENTICATION_ERROR.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
         }
-        return ResponseEntity.badRequest().body("Failed Authentication ");
+
+        // Trường hợp bất thường (lý do không hợp lệ)
+        apiResponse.setCode(HttpStatus.UNAUTHORIZED.value());
+        apiResponse.setMessage("Invalid username or password");
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
     }
 
 }

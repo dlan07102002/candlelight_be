@@ -6,9 +6,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import jakarta.validation.Valid;
 import vn.duclan.candlelight_be.repository.UserRepository;
+import vn.duclan.candlelight_be.exception.AppException;
+import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.Notification;
 import vn.duclan.candlelight_be.model.User;
 
@@ -26,15 +29,19 @@ public class AccountService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ResponseEntity<?> register(@Valid User user) {
+    public User register(@Valid User user) {
         if (userRepository.existsByUsername(user.getUsername())) {
-            return ResponseEntity.badRequest()
-                    .body(new Notification("Username already exists. Please choose a different one."));
+            // return ResponseEntity.badRequest()
+            // .body(new Notification("Username already exists. Please choose a different
+            // one."));
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            return ResponseEntity.badRequest()
-                    .body(new Notification("Email already exists. Please choose a different one."));
+            // return ResponseEntity.badRequest()
+            // .body(new Notification("Email already exists. Please choose a different
+            // one."));
+            throw new AppException(ErrorCode.USER_EXISTED);
         }
 
         // Encoding password
@@ -46,11 +53,12 @@ public class AccountService {
         user.setIsActivate(false);
 
         // Insert user into DB
-        userRepository.save(user);
+        // userRepository.save(user);
 
         // send email to User for activation account
         sendActiveEmail(user.getEmail(), user.getActivateCode());
-        return ResponseEntity.ok("Registration successful!");
+        // return ResponseEntity.ok("Registration successful!");
+        return user;
     }
 
     private String generateActivateCode() {
