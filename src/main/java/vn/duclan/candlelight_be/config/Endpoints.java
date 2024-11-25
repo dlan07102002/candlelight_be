@@ -4,8 +4,7 @@ package vn.duclan.candlelight_be.config;
 public class Endpoints {
         public static final String FE_HOST = "http://localhost:5173";
         public static final String[] PUBLIC_GET_ENDPOINTS = {
-                        "/users",
-                        "/users/**",
+
                         "/products",
                         "/products/**",
                         "/images",
@@ -29,11 +28,13 @@ public class Endpoints {
 
                         "/account/register",
                         "/account/login",
+                        "/account/introspect",
                         "/api/order-detail",
                         "/api/order-detail/**",
 
                         "/images",
                         "/images/**",
+                        "/account/refresh"
                         // "/admin/images",
                         // "/admin/images/**",
 
@@ -43,7 +44,8 @@ public class Endpoints {
                         "/order-details/",
                         "/order-details/**",
                         "/users",
-                        "/users/**"
+                        "/users/**",
+                        "/account/**",
 
         };
 

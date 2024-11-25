@@ -17,13 +17,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
+import lombok.AllArgsConstructor;
+import vn.duclan.candlelight_be.exception.springSecurityCustom.CustomAccessDeniedHandler;
+import vn.duclan.candlelight_be.exception.springSecurityCustom.CustomAuthenticationEntryPoint;
 import vn.duclan.candlelight_be.filter.JwtFilter;
 import vn.duclan.candlelight_be.service.UserService;
 
 @Configuration
+@AllArgsConstructor
 public class WebSecurityConfig {
-    @Autowired
     private JwtFilter filter;
+    private CustomAccessDeniedHandler accessDeniedHandler;
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -74,7 +79,14 @@ public class WebSecurityConfig {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         // add filter
         http.addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+
+        // Spring security default enable csrf - Cross-Site Request Forgery
         http.csrf(csrf -> csrf.disable());
+        http.exceptionHandling(exception -> {
+            exception.accessDeniedHandler(accessDeniedHandler);
+            exception.authenticationEntryPoint(authenticationEntryPoint);
+        });
+
         return http.build();
 
     }

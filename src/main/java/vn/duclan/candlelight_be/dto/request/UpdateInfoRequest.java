@@ -1,13 +1,13 @@
 package vn.duclan.candlelight_be.dto.request;
 
-import org.springframework.boot.context.properties.bind.DefaultValue;
+import org.hibernate.validator.constraints.UniqueElements;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -16,14 +16,13 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import vn.duclan.candlelight_be.model.Gender;
-import vn.duclan.validator.PasswordConstraints;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class RegisterRequest {
+public class UpdateInfoRequest {
 
     String lastName;
 
@@ -33,7 +32,8 @@ public class RegisterRequest {
     @Size(min = 3, message = "Username must have at least {min} characters")
     String username;
 
-    @PasswordConstraints(min = 16)
+    @NotEmpty(message = "Password can not be empty")
+    @Size(min = 8, max = 512)
     String password;
 
     @Enumerated(EnumType.STRING)
@@ -45,9 +45,6 @@ public class RegisterRequest {
     String phoneNumber;
     String orderAddress;
     String deliveryAddress;
-
-    @Builder.Default
-    Boolean isActivate = false;
+    Boolean isActivate;
     String activateCode;
-
 }

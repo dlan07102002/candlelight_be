@@ -8,10 +8,13 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import vn.duclan.candlelight_be.exception.AppException;
+import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.service.JwtService;
 import vn.duclan.candlelight_be.service.UserService;
 
@@ -27,44 +30,42 @@ public class JwtFilter extends OncePerRequestFilter {
     @Autowired
     private UserService userService;
 
+    private String extractToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
+    private void authenticateUser(String username, String token, HttpServletRequest request) {
+        UserDetails userDetails = userService.loadUserByUsername(username);
+        if (userDetails != null && jwtService.validateToken(token, userDetails)) {
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    userDetails.getAuthorities());
+            authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authToken);
+        }
+    }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        String authHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-        // Bearer to identity token
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            token = authHeader.substring(7);
-            try {
-                username = jwtService.getUsername(token);
+        try {
+            String token = extractToken(request);
 
-            } catch (Exception e) {
-                System.out.println("Error extracting username from token: " + e.getMessage());
-            }
-        }
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            // load userDetails by username
-            try {
-                UserDetails userDetails = userService.loadUserByUsername(username);
-                System.out.println(userDetails);
-                // check isValidation token
-                if (userDetails != null && jwtService.validateToken(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
-                            null, userDetails.getAuthorities());
-                    // Get user and save user to request
-                    // set authToken to securityContextHolder
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
+            if (token != null) {
 
+                String username = jwtService.getUsername(token);
+                System.out.println(username);
+                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    authenticateUser(username, token, request);
                 }
-            } catch (Exception e) {
-                System.out.println(e);
             }
-
-            // return (username.equals(userDetails.getUsername()) &&
-            // jwtService.isJWTExpired(token));
+        } catch (JwtException e) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
         }
+
         filterChain.doFilter(request, response);
     }
 

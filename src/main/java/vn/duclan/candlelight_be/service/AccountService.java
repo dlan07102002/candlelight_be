@@ -1,6 +1,7 @@
 package vn.duclan.candlelight_be.service;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,6 +12,8 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +22,9 @@ import vn.duclan.candlelight_be.repository.RoleRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
+import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
+import vn.duclan.candlelight_be.dto.response.APIResponse;
+import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.mapper.UserMapper;
@@ -37,6 +43,9 @@ public class AccountService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private UserService userService;
+
     public AccountService(UserRepository userRepository, EmailServiceImpl emailService,
             BCryptPasswordEncoder passwordEncoder, UserMapper userMapper, RoleRepository roleRepository) {
         this.userRepository = userRepository;
@@ -46,7 +55,7 @@ public class AccountService {
         this.roleRepository = roleRepository;
     }
 
-    public User register(@Valid RegisterRequest request) {
+    public UserResponse register(@Valid RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
             // return ResponseEntity.badRequest()
@@ -68,7 +77,6 @@ public class AccountService {
 
         // set Activate code
         request.setActivateCode(generateActivateCode());
-        request.setIsActivate(false);
 
         // send email to User for activation account
         sendActiveEmail(request.getEmail(), request.getActivateCode());
@@ -83,9 +91,11 @@ public class AccountService {
         // return ResponseEntity.ok("Registration successful!");
 
         // Insert user into DB
-        userRepository.save(user);
+        // userRepository.save(user);
 
-        return user;
+        UserResponse userResponse = userMapper.toUserResponse(user);
+
+        return userResponse;
     }
 
     public String login(@Valid LoginRequest request) {
@@ -96,12 +106,95 @@ public class AccountService {
 
     }
 
-    private String generateActivateCode() {
+    public ResponseEntity<?> activate(String email, String activateCode) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User is exists");
+        }
+
+        if (user.getIsActivate()) {
+            return ResponseEntity.badRequest().body(new Notification("The account has already been activated!"));
+
+        }
+
+        if (activateCode.equals(user.getActivateCode())) {
+            user.setIsActivate(true);
+            userRepository.saveAndFlush(user);
+            return ResponseEntity.ok(new Notification("Activation successful"));
+        } else {
+            return ResponseEntity.badRequest().body(new Notification("Activation failed, Invalid activation code"));
+        }
+    }
+
+    public APIResponse<UserResponse> updateInfo(String authorization, int userId,
+            UpdateInfoRequest request) {
+        APIResponse<UserResponse> apiResponse = new APIResponse<>();
+
+        // Get token from Header authorization field
+        String token = authorization.startsWith("Bearer ") ? authorization.substring(7) : authorization;
+
+        String username = jwtService.getUsername(token);
+
+        User userFromToken = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.AUTHENTICATION_ERROR));
+
+        User userById = userRepository.findById(userId)
+                .orElseThrow(() -> new AppException(ErrorCode.AUTHENTICATION_ERROR));
+
+        List<Role> roleList = userFromToken.getRoleList();
+        boolean isAdmin = false;
+
+        if (userFromToken != null && roleList.size() > 0) {
+            for (Role role : roleList) {
+                if (role.getRoleName().equals("ADMIN")) {
+                    isAdmin = true;
+                    break;
+                }
+
+            }
+        }
+
+        if (!username.equals(userById.getUsername()) && !isAdmin) {
+            // User change another user's information
+            apiResponse.setCode(HttpStatus.FORBIDDEN.value());
+            apiResponse.setMessage("You are not authorized to update this user's information.");
+            return apiResponse;
+
+        } else {
+            if (request.getUsername() != null) {
+                if (!userRepository.findByUsername(request.getUsername()).isEmpty()) {
+                    apiResponse.setCode(ErrorCode.AUTHENTICATION_ERROR.getCode());
+                    apiResponse.setMessage("This username already exists");
+                    return apiResponse;
+                }
+            }
+
+            if (request.getPassword() != null) {
+                // Encoding password
+                String encryptPassword = passwordEncoder.encode(request.getPassword());
+                request.setPassword(encryptPassword);
+            }
+
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User Id is not valid"));
+            userMapper.updateUser(user, request);
+            userRepository.saveAndFlush(user);
+
+            apiResponse.setCode(HttpStatus.OK.value());
+            apiResponse.setMessage("Update Successful.");
+            apiResponse.setResult(userMapper.toUserResponse(user));
+            return apiResponse;
+
+        }
+
+    }
+
+    public String generateActivateCode() {
         // generate random string
         return UUID.randomUUID().toString();
     }
 
-    private void sendActiveEmail(String email, String activateCode) {
+    public void sendActiveEmail(String email, String activateCode) {
         String url = "http://localhost:5173/activate/" + email + "/" + activateCode;
         String subject = "Complete Your Registration: Activate Your Candlelight.com Account";
 
@@ -134,23 +227,4 @@ public class AccountService {
         emailService.sendEmail("s.gintoki710@gmail.com", email, subject, content);
     }
 
-    public ResponseEntity<?> activate(String email, String activateCode) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
-        if (user == null) {
-            return ResponseEntity.badRequest().body("User is exists");
-        }
-
-        if (user.getIsActivate()) {
-            return ResponseEntity.badRequest().body(new Notification("The account has already been activated!"));
-
-        }
-
-        if (activateCode.equals(user.getActivateCode())) {
-            user.setIsActivate(true);
-            userRepository.save(user);
-            return ResponseEntity.ok(new Notification("Activation successful"));
-        } else {
-            return ResponseEntity.badRequest().body(new Notification("Activation failed, Invalid activation code"));
-        }
-    }
 }

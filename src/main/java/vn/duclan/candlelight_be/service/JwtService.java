@@ -1,5 +1,7 @@
 package vn.duclan.candlelight_be.service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.function.Function;
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -16,19 +19,34 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import lombok.experimental.NonFinal;
+import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
+import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
 import vn.duclan.candlelight_be.model.Role;
 import vn.duclan.candlelight_be.model.User;
 
 @Component
 public class JwtService {
     // config secret key in application propeties
-    private static final String SECRET_KEY = "9a4f2c8d3b7a1e6f45c8a0b3f267d8b1d4e6f3c8a9d2b5f8e3a9c8b5f6v8a3d9";
-    private static long jwtExpirationDate = 3600000; // 1h = 3600s and 3600*1000 = 3600000 milliseconds
+    @Value("${jwt.secretKey}")
+    @NonFinal
+    protected String SECRET_KEY;
+
+    @Value("${jwt.valid-duration}")
+    @NonFinal
+    protected long VALID_DURATION;
+
+    @Value("${jwt.refreshable-duration}")
+    @NonFinal
+    protected long REFRESHABLE_DURATION;
+
     @Autowired
     private UserService userService;
 
     // generate jwt base on username
     public String generateToken(String username) {
+
         Map<String, Object> claims = new HashMap<>();
         User user = userService.findByUsername(username);
         List<Role> roleList = user.getRoleList();
@@ -60,14 +78,17 @@ public class JwtService {
     // Tạo JWT với các claim đã chọn
     private String createToken(Map<String, Object> claims, String username) {
         Date currentDate = new Date();
-        Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
+        // Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
+        Date expirationDate = new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
 
+        // When call builder() and provide claims, JJWT auto convert claims map to
+        // payload
         return Jwts.builder()
                 .claims(claims)
                 .subject(username)
                 .issuedAt(currentDate)
-                .expiration(expireDate)
-                .signWith(key(), Jwts.SIG.HS256)
+                .expiration(expirationDate)
+                .signWith(key(), Jwts.SIG.HS512)
                 .compact();
     }
 
@@ -100,13 +121,16 @@ public class JwtService {
     }
 
     // Extract isJWT expired
-    public Boolean isJWTExpired(String token) {
+    public Boolean isJWTExpired(String token, boolean isRefresh) {
         // :: -> method reference in Java 8
         if (token == null) {
             return true;
 
-        } else
-            return getExpirationDate(token).before(new Date());
+        } else {
+            Date expiredDate = getExpirationDate(token);
+            return expiredDate.before(new Date());
+
+        }
     }
 
     // validation Token
@@ -115,7 +139,7 @@ public class JwtService {
             return false;
         }
         final String username = getUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isJWTExpired(token));
+        return (username.equals(userDetails.getUsername()) && !isJWTExpired(token, false));
 
     }
 
@@ -123,6 +147,30 @@ public class JwtService {
     public String getUsername(String token) {
         // :: -> method reference in Java 8
         return getClaim(token, Claims::getSubject);
+    }
+
+    public String refreshToken(String authorization) {
+
+        // Get token from Header authorization field
+        String jwt = authorization.startsWith("Bearer ") ? authorization.substring(7) : authorization;
+        String username = getUsername(jwt);
+
+        String token = generateToken(username);
+        return token;
+    }
+
+    public IntrospectResponse introspect(IntrospectRequest request) {
+        try {
+            Claims claims = getAllClaimsFromToken(request.getToken());
+
+            Date expiredDate = claims.getExpiration();
+
+            return IntrospectResponse.builder().valid(!claims.isEmpty() && expiredDate.after(new Date())).build();
+        } catch (SignatureException e) {
+            // TODO: handle exception
+            return IntrospectResponse.builder().valid(false).build();
+        }
+
     }
 
 }

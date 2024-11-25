@@ -1,5 +1,8 @@
 package vn.duclan.candlelight_be.exception;
 
+import lombok.Builder;
+
+@Builder
 public class ValidationError {
     private String field;
     private String message;

@@ -1,7 +1,6 @@
 package vn.duclan.candlelight_be.service;
 
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +44,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Username is not valid"));
+    }
+
+    @Override
+    public User findById(int id) {
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Username is not valid"));
     }
 
     private Collection<? extends GrantedAuthority> rolesToAuthorities(Collection<Role> roles) {

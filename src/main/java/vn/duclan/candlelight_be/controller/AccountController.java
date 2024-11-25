@@ -1,5 +1,6 @@
 package vn.duclan.candlelight_be.controller;
 
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,16 +11,22 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
+import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
-import vn.duclan.candlelight_be.dto.response.JwtResponse;
+import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
+import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.User;
@@ -30,24 +37,25 @@ import vn.duclan.candlelight_be.service.UserService;
 @RestController
 @RequestMapping("/account")
 public class AccountController {
-    @Autowired
     private AccountService accountService;
-
-    @Autowired
     private AuthenticationManager authenticationManager;
-
-    @Autowired
     private UserService userService;
-
-    @Autowired
     private JwtService jwtService;
+
+    public AccountController(AccountService accountService, AuthenticationManager authenticationManager,
+            UserService userService, JwtService jwtService) {
+        this.accountService = accountService;
+        this.authenticationManager = authenticationManager;
+        this.userService = userService;
+        this.jwtService = jwtService;
+    }
 
     @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
     @PostMapping("/register")
-    public APIResponse<User> register(@Validated @RequestBody RegisterRequest request) {
-        // System.out.println(user);
+    public APIResponse<UserResponse> register(@Validated @RequestBody RegisterRequest request) {
+
         // ?: unbounded wildcard.
-        APIResponse<User> apiResponse = new APIResponse<>();
+        APIResponse<UserResponse> apiResponse = new APIResponse<>();
         apiResponse.setResult(accountService.register(request));
         // ResponseEntity<?> response =
         return apiResponse;
@@ -64,7 +72,6 @@ public class AccountController {
     @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<APIResponse<String>> login(@RequestBody LoginRequest loginRequest) {
         APIResponse<String> apiResponse = new APIResponse<>();
-
         try {
             // Authenticating
             Authentication authentication = authenticationManager.authenticate(
@@ -72,6 +79,7 @@ public class AccountController {
 
             // Check isActivate
             User user = userService.findByUsername(loginRequest.getUsername());
+
             if (!user.getIsActivate()) {
                 // "Account is not activated. Please activate your account."
                 throw new AppException(ErrorCode.ACTIVATION_ERROR);
@@ -101,6 +109,37 @@ public class AccountController {
         apiResponse.setCode(HttpStatus.UNAUTHORIZED.value());
         apiResponse.setMessage("Invalid username or password");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
+    }
+
+    @PatchMapping("/update/{userId}")
+    @CrossOrigin(origins = "http://localhost:5173")
+    public ResponseEntity<APIResponse<UserResponse>> update(@RequestBody UpdateInfoRequest request,
+            @PathVariable String userId, @RequestHeader("Authorization") String authorization) {
+        APIResponse<UserResponse> apiResponse = accountService.updateInfo(authorization, Integer.parseInt(userId),
+                request);
+
+        if (apiResponse.getResult() != null)
+            return ResponseEntity.ok(apiResponse);
+        else
+            return ResponseEntity.badRequest().body(apiResponse);
+
+    }
+
+    @PostMapping("/refresh")
+    @CrossOrigin(origins = "http://localhost:5173")
+    public ResponseEntity<APIResponse<String>> refresh(@RequestHeader("Authorization") String authorization) {
+        APIResponse<String> apiResponse = new APIResponse<>();
+        String jwt = jwtService.refreshToken(authorization);
+        apiResponse.setCode(HttpStatus.OK.value());
+        apiResponse.setMessage("Refresh successful");
+        apiResponse.setResult(jwt);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PostMapping("/introspect")
+    public APIResponse<IntrospectResponse> authenticate(@RequestBody IntrospectRequest request) {
+        var result = jwtService.introspect(request);
+        return APIResponse.<IntrospectResponse>builder().result(result).build();
     }
 
 }
