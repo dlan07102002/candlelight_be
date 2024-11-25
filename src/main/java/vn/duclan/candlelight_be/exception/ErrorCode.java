@@ -13,8 +13,10 @@ public enum ErrorCode {
     VALIDATION_ERROR(1002, "Validation Failed", HttpStatus.BAD_REQUEST),
     ACTIVATION_ERROR(1003, "Activation Failed", HttpStatus.BAD_REQUEST),
     INVALID_PASSWORD(1004, "Password must be at least {min} characters long", HttpStatus.BAD_REQUEST),
-    AUTHENTICATION_ERROR(1005, "Invalid Username or Password", HttpStatus.UNAUTHORIZED),
+    UNAUTHENTICATION(1005, "Invalid Username or Password", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1006, "You do not have permission", HttpStatus.FORBIDDEN),
+    INVALID_TOKEN(1006, "Invalid token or token is expired", HttpStatus.BAD_REQUEST),
+
     BAD_REQUEST(400, "Bad Request", HttpStatus.BAD_REQUEST);
 
     // Thuộc tính

@@ -12,11 +12,14 @@ import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Data
 @Table(name = "images")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Image {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

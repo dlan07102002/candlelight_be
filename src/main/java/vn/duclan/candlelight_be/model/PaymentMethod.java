@@ -11,29 +11,33 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Entity
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Table(name = "payment_methods")
+
 public class PaymentMethod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_method_id")
-    private int paymentMethodId;
+    int paymentMethodId;
 
     @Column(name = "payment_method_name")
-    private String paymentMethodName;
+    String paymentMethodName;
 
     @Column(name = "payment_cost")
-    private double paymentCost;
+    double paymentCost;
 
     @Column(name = "description")
-    private String description;
+    String description;
 
     @OneToMany(mappedBy = "paymentMethod", fetch = FetchType.LAZY, cascade = {
             CascadeType.PERSIST, CascadeType.MERGE,
             CascadeType.DETACH, CascadeType.REFRESH
     })
-    private List<Order> orderList;
+    List<Order> orderList;
 }

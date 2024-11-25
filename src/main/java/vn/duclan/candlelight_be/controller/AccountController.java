@@ -1,5 +1,7 @@
 package vn.duclan.candlelight_be.controller;
 
+import java.text.ParseException;
+
 import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,12 +22,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.core.io.JsonEOFException;
+
 import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
+import vn.duclan.candlelight_be.dto.request.LogoutRequest;
+import vn.duclan.candlelight_be.dto.request.RefreshRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
 import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
 import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
+import vn.duclan.candlelight_be.dto.response.JwtResponse;
 import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
@@ -100,8 +107,8 @@ public class AccountController {
             apiResponse.setMessage(errorCode.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiResponse);
         } catch (AuthenticationException e) {
-            apiResponse.setCode(ErrorCode.AUTHENTICATION_ERROR.getCode());
-            apiResponse.setMessage(ErrorCode.AUTHENTICATION_ERROR.getMessage());
+            apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
+            apiResponse.setMessage(ErrorCode.UNAUTHENTICATION.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
         }
 
@@ -109,6 +116,12 @@ public class AccountController {
         apiResponse.setCode(HttpStatus.UNAUTHORIZED.value());
         apiResponse.setMessage("Invalid username or password");
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
+    }
+
+    @PostMapping("/logout")
+    public APIResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException {
+        accountService.logout(request);
+        return APIResponse.<Void>builder().build();
     }
 
     @PatchMapping("/update/{userId}")
@@ -127,13 +140,13 @@ public class AccountController {
 
     @PostMapping("/refresh")
     @CrossOrigin(origins = "http://localhost:5173")
-    public ResponseEntity<APIResponse<String>> refresh(@RequestHeader("Authorization") String authorization) {
-        APIResponse<String> apiResponse = new APIResponse<>();
-        String jwt = jwtService.refreshToken(authorization);
+    public APIResponse<JwtResponse> refresh(@RequestBody RefreshRequest request) {
+        APIResponse<JwtResponse> apiResponse = new APIResponse<>();
+        JwtResponse jwtResponse = jwtService.refreshToken(request);
         apiResponse.setCode(HttpStatus.OK.value());
         apiResponse.setMessage("Refresh successful");
-        apiResponse.setResult(jwt);
-        return ResponseEntity.ok(apiResponse);
+        apiResponse.setResult(jwtResponse);
+        return apiResponse;
     }
 
     @PostMapping("/introspect")

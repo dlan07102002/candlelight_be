@@ -13,25 +13,28 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Entity
 @Table(name = "order_details")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderDetail {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "order_detail_id")
-        private long orderDetailId;
+        long orderDetailId;
 
         @Column(name = "quantity")
-        private int quantity;
+        int quantity;
 
         @Column(name = "sell_price")
-        private double sellPrice;
+        double sellPrice;
 
         @Transient // Trường này sẽ không được lưu trong cơ sở dữ liệu
-        private int productId;
+        int productId;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
@@ -42,19 +45,19 @@ public class OrderDetail {
         // when obj convert to Json and vice versa
         // Put this here to avoid recursion
         @JsonIgnore
-        private Product product;
+        Product product;
 
         @Transient
-        private int orderId;
+        int orderId;
 
         @Transient
-        private int userId;
+        int userId;
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JsonIgnore
         @JoinColumn(name = "order_id", nullable = false)
-        private Order order;
+        Order order;
 
 }

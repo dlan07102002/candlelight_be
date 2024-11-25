@@ -29,12 +29,14 @@ public class Endpoints {
                         "/account/register",
                         "/account/login",
                         "/account/introspect",
+                        "/account/logout",
+                        "/account/refresh",
+
                         "/api/order-detail",
                         "/api/order-detail/**",
 
                         "/images",
                         "/images/**",
-                        "/account/refresh"
                         // "/admin/images",
                         // "/admin/images/**",
 

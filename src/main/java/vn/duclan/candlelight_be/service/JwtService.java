@@ -1,11 +1,13 @@
 package vn.duclan.candlelight_be.service;
 
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 import javax.crypto.SecretKey;
@@ -16,15 +18,23 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import io.jsonwebtoken.security.SignatureException;
 import lombok.experimental.NonFinal;
 import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
+import vn.duclan.candlelight_be.dto.request.RefreshRequest;
 import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
+import vn.duclan.candlelight_be.dto.response.JwtResponse;
+import vn.duclan.candlelight_be.exception.AppException;
+import vn.duclan.candlelight_be.exception.ErrorCode;
+import vn.duclan.candlelight_be.model.InvalidatedToken;
 import vn.duclan.candlelight_be.model.Role;
 import vn.duclan.candlelight_be.model.User;
+import vn.duclan.candlelight_be.repository.InvalidatedTokenRepository;
+import vn.duclan.candlelight_be.repository.UserRepository;
 
 @Component
 public class JwtService {
@@ -42,13 +52,17 @@ public class JwtService {
     protected long REFRESHABLE_DURATION;
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;
+
+    @Autowired
+    private InvalidatedTokenRepository invalidatedTokenRepository;
 
     // generate jwt base on username
     public String generateToken(String username) {
 
         Map<String, Object> claims = new HashMap<>();
-        User user = userService.findByUsername(username);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
         List<Role> roleList = user.getRoleList();
         boolean isAdmin = false;
         boolean isStaff = false;
@@ -85,6 +99,7 @@ public class JwtService {
         // payload
         return Jwts.builder()
                 .claims(claims)
+                .id(UUID.randomUUID().toString())
                 .subject(username)
                 .issuedAt(currentDate)
                 .expiration(expirationDate)
@@ -95,22 +110,36 @@ public class JwtService {
     // Get secret key
     private SecretKey key() {
         byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        if (keyBytes.length != 64) { // For HmacSHA512, ensure the key is 64 bytes
+            System.out.println(keyBytes.length);
+            throw new IllegalArgumentException("Invalid key length for HS512");
+        }
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
     // extract information
     // From 0.12.0
-    private Claims getAllClaimsFromToken(String token) {
-        return Jwts.parser()
-                .verifyWith(key())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+    public Claims getAllClaimsFromToken(String token) {
+        try {
+            return Jwts.parser()
+                    .verifyWith(key())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+        } catch (ExpiredJwtException e) {
+            /*
+             * jjwt throws ExpiredJwtException when token expired and that's why could not
+             * get Claims, catch exception help getClaims when token expired
+             */
+            return e.getClaims();
+        }
+
     }
 
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
 
-        final Claims claims = getAllClaimsFromToken(token);
+        Claims claims = getAllClaimsFromToken(token);
+
         return claimsTFunction.apply(claims);
     }
 
@@ -120,6 +149,11 @@ public class JwtService {
         return getClaim(token, Claims::getExpiration);
     }
 
+    public Date getIssueDate(String token) {
+        // :: -> method reference in Java 8
+        return getClaim(token, Claims::getIssuedAt);
+    }
+
     // Extract isJWT expired
     public Boolean isJWTExpired(String token, boolean isRefresh) {
         // :: -> method reference in Java 8
@@ -127,50 +161,86 @@ public class JwtService {
             return true;
 
         } else {
-            Date expiredDate = getExpirationDate(token);
+            Date expiredDate = isRefresh
+                    ? new Date(getIssueDate(token).toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                            .toEpochMilli())
+                    : getExpirationDate(token);
             return expiredDate.before(new Date());
 
         }
     }
 
-    // validation Token
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        if (token == null) {
-            return false;
-        }
-        final String username = getUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isJWTExpired(token, false));
-
-    }
-
     // Extract Username
     public String getUsername(String token) {
         // :: -> method reference in Java 8
+
         return getClaim(token, Claims::getSubject);
     }
 
-    public String refreshToken(String authorization) {
+    // validation Token
+    public Boolean validateToken(String token, UserDetails userDetails, boolean isRefresh) throws JwtException {
+        if (token == null)
+            return false;
+        final String username = getUsername(token);
+        // Kiểm tra tính hợp lệ của token
+        IntrospectResponse introspectResponse = introspect(IntrospectRequest.builder().token(token).build());
+        if (!introspectResponse.isValid()) {
+            throw new JwtException("Token invalid");
+        }
+        return (username.equals(userDetails.getUsername()) && !isJWTExpired(token, isRefresh));
 
-        // Get token from Header authorization field
-        String jwt = authorization.startsWith("Bearer ") ? authorization.substring(7) : authorization;
-        String username = getUsername(jwt);
+    }
 
-        String token = generateToken(username);
-        return token;
+    public JwtResponse refreshToken(RefreshRequest request) {
+        // Lấy token từ request
+        String bearerToken = request.getToken();
+        String token = bearerToken.startsWith("Bearer ") ? bearerToken.substring(7) : bearerToken;
+
+        // Giải mã JWT và kiểm tra tính hợp lệ
+        Claims claims = getAllClaimsFromToken(token);
+
+        // Kiểm tra token đã hết hạn chưa (dựa trên REFRESHABLE_DURATION)
+        if (isJWTExpired(token, true)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+        }
+        String jit = claims.getId();
+        // Nếu đã logout thì không thể dùng token đó để refresh
+        if (invalidatedTokenRepository.existsById(jit)) {
+            throw new AppException(ErrorCode.INVALID_TOKEN);
+
+        }
+
+        // Đánh dấu token cũ là không hợp lệ (nếu cần lưu trạng thái)
+        String tokenId = claims.getId();
+        invalidatedTokenRepository.save(
+                InvalidatedToken.builder()
+                        .id(tokenId)
+                        .expiredTime(new Timestamp(claims.getExpiration().getTime()))
+                        .build());
+
+        // Lấy username từ token và tạo Access Token mới
+        String username = claims.getSubject();
+        String newToken = generateToken(username);
+
+        // Trả về token mới
+        return JwtResponse.builder()
+                .jwt(newToken)
+                .build();
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) {
+        boolean isValid = true;
+        String token = request.getToken();
         try {
-            Claims claims = getAllClaimsFromToken(request.getToken());
+            Claims claims = getAllClaimsFromToken(token);
 
-            Date expiredDate = claims.getExpiration();
+            if (isJWTExpired(token, false) || invalidatedTokenRepository.existsById(claims.getId())) {
+                isValid = false;
+            }
+        } catch (Exception e) {
+            isValid = false;
 
-            return IntrospectResponse.builder().valid(!claims.isEmpty() && expiredDate.after(new Date())).build();
-        } catch (SignatureException e) {
-            // TODO: handle exception
-            return IntrospectResponse.builder().valid(false).build();
         }
-
+        return IntrospectResponse.builder().valid(isValid).build();
     }
-
 }

@@ -15,34 +15,37 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Entity
 @Table(name = "orders")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "order_id")
-        private int orderId;
+        int orderId;
 
         @Column(name = "created_at")
-        private Date createdAt;
+        Date createdAt;
 
         @Column(name = "order_address", length = 512)
-        private String orderAddress;
+        String orderAddress;
 
         @Column(name = "delivery_address", length = 512)
-        private String deliveryAddress;
+        String deliveryAddress;
 
         @Column(name = "delivery_cost")
-        private double deliveryCost;
+        double deliveryCost;
 
         @Column(name = "payment_cost")
-        private double paymentCost;
+        double paymentCost;
 
         @Column(name = "total_price")
-        private double totalPrice;
+        double totalPrice;
 
         @Column(name = "delivery_status")
         // "Pending", //created but not delivery
@@ -53,14 +56,14 @@ public class Order {
         // "Returned",
         // "Canceled",
         // "Delayed"
-        private String deliveryStatus;
+        String deliveryStatus;
 
         // [Pending, Paid, Failed, Refunded, Canceled, Processing, Completed]
         @Column(name = "payment_status")
-        private String paymentStatus;
+        String paymentStatus;
 
         @Transient
-        private int userId;
+        int userId;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
@@ -68,22 +71,22 @@ public class Order {
         })
         @JoinColumn(name = "user_id", nullable = false)
 
-        private User user;
+        User user;
 
         @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-        private List<OrderDetail> orderDetailList;
+        List<OrderDetail> orderDetailList;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "delivery_method_id")
-        private DeliveryMethod deliveryMethod;
+        DeliveryMethod deliveryMethod;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "payment_method_id")
-        private PaymentMethod paymentMethod;
+        PaymentMethod paymentMethod;
 }

@@ -4,86 +4,89 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
 @Entity
 @Data
 @Table(name = "users")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "user_id")
-        private int userId;
+        int userId;
 
         @Column(name = "last_name")
-        private String lastName;
+        String lastName;
 
         @Column(name = "first_name")
-        private String firstName;
+        String firstName;
 
         @Column(name = "username")
         @NotEmpty(message = "Username can not be empty")
-        private String username;
+        String username;
 
         @Column(name = "password")
         @NotEmpty(message = "Password can not be empty")
         @Size(min = 8, max = 512)
-        private String password;
+        String password;
 
         @Enumerated(EnumType.STRING)
         @Column(name = "gender")
-        private Gender gender;
+        Gender gender;
 
         @Column(name = "email")
         @Email(message = "Invalid email address.")
-        private String email;
+        String email;
 
         @Column(name = "phone_number")
-        private String phoneNumber;
+        String phoneNumber;
 
         @Column(name = "order_address")
-        private String orderAddress;
+        String orderAddress;
 
         @Column(name = "delivery_address")
-        private String deliveryAddress;
+        String deliveryAddress;
 
         // Boolean chấp nhận giá trị null
         @Column(name = "is_activate", columnDefinition = "BOOLEAN")
-        private Boolean isActivate;
+        Boolean isActivate;
 
         @Column(name = "activate_code")
-        private String activateCode;
+        String activateCode;
 
         // @Column(name = "avatar", columnDefinition = "LONGBLOB")
         // @Lob
-        // private String avatar;
+        // String avatar;
 
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        private List<Review> reviewList;
+        List<Review> reviewList;
 
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        private List<Wishlist> wishlists;
+        List<Wishlist> wishlists;
 
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        private List<Order> orderList;
+        List<Order> orderList;
 
         @ManyToMany(fetch = FetchType.EAGER, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-        private List<Role> roleList;
+        List<Role> roleList;
 
 }

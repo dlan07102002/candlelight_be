@@ -1,5 +1,8 @@
 package vn.duclan.candlelight_be.dto.response;
 
+import lombok.Builder;
+
+@Builder
 public class JwtResponse {
 
     private final String jwt;

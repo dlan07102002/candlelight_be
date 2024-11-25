@@ -24,7 +24,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             AuthenticationException authException) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-        ErrorCode errorCode = ErrorCode.AUTHENTICATION_ERROR;
+        ErrorCode errorCode = ErrorCode.UNAUTHENTICATION;
         // Tạo một thông báo lỗi trả về
         ObjectMapper mapper = new ObjectMapper();
         response.getWriter().write(

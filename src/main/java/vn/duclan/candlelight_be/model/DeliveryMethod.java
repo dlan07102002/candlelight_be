@@ -11,25 +11,28 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Entity
 @Table(name = "delivery_methods")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class DeliveryMethod {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "delivery_method_id")
-    private int deliveryMethodId;
+    int deliveryMethodId;
 
     @Column(name = "delivery_method_name")
-    private String deliveryMethodName;
+    String deliveryMethodName;
 
     @Column(name = "description")
-    private String description;
+    String description;
 
     @Column(name = "delivery_cost")
-    private double deliveryCost;
+    double deliveryCost;
 
     @OneToMany(mappedBy = "deliveryMethod", fetch = FetchType.LAZY, cascade = {
             CascadeType.PERSIST, CascadeType.MERGE,

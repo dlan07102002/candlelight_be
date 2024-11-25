@@ -1,5 +1,8 @@
 package vn.duclan.candlelight_be.service;
 
+import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,11 +19,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import io.jsonwebtoken.Claims;
 
 import jakarta.validation.Valid;
+import vn.duclan.candlelight_be.repository.InvalidatedTokenRepository;
 import vn.duclan.candlelight_be.repository.RoleRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
+import vn.duclan.candlelight_be.dto.request.LogoutRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
 import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
@@ -28,6 +34,7 @@ import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.mapper.UserMapper;
+import vn.duclan.candlelight_be.model.InvalidatedToken;
 import vn.duclan.candlelight_be.model.Notification;
 import vn.duclan.candlelight_be.model.Role;
 import vn.duclan.candlelight_be.model.User;
@@ -39,20 +46,19 @@ public class AccountService {
     private RoleRepository roleRepository;
     private BCryptPasswordEncoder passwordEncoder;
     private UserMapper userMapper;
-
-    @Autowired
     private JwtService jwtService;
-
-    @Autowired
-    private UserService userService;
+    private InvalidatedTokenRepository invalidatedTokenRepository;
 
     public AccountService(UserRepository userRepository, EmailServiceImpl emailService,
-            BCryptPasswordEncoder passwordEncoder, UserMapper userMapper, RoleRepository roleRepository) {
+            BCryptPasswordEncoder passwordEncoder, UserMapper userMapper, RoleRepository roleRepository,
+            JwtService jwtService, InvalidatedTokenRepository invalidatedTokenRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
         this.userMapper = userMapper;
         this.roleRepository = roleRepository;
+        this.jwtService = jwtService;
+        this.invalidatedTokenRepository = invalidatedTokenRepository;
     }
 
     public UserResponse register(@Valid RegisterRequest request) {
@@ -106,6 +112,15 @@ public class AccountService {
 
     }
 
+    public void logout(LogoutRequest request) {
+        Claims claims = jwtService.getAllClaimsFromToken(request.getToken());
+        String jit = claims.getId();
+        Timestamp expiredTime = new Timestamp(claims.getExpiration().getTime());
+
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jit).expiredTime(expiredTime).build();
+        invalidatedTokenRepository.save(invalidatedToken);
+    }
+
     public ResponseEntity<?> activate(String email, String activateCode) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
         if (user == null) {
@@ -136,10 +151,10 @@ public class AccountService {
         String username = jwtService.getUsername(token);
 
         User userFromToken = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.AUTHENTICATION_ERROR));
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
         User userById = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.AUTHENTICATION_ERROR));
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
         List<Role> roleList = userFromToken.getRoleList();
         boolean isAdmin = false;
@@ -163,7 +178,7 @@ public class AccountService {
         } else {
             if (request.getUsername() != null) {
                 if (!userRepository.findByUsername(request.getUsername()).isEmpty()) {
-                    apiResponse.setCode(ErrorCode.AUTHENTICATION_ERROR.getCode());
+                    apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
                     apiResponse.setMessage("This username already exists");
                     return apiResponse;
                 }

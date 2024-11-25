@@ -12,43 +12,46 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Data
 @Table(name = "products")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "product_id")
-        private int productId;
+        int productId;
 
         @Column(name = "product_name")
-        private String productName;
+        String productName;
 
         @Column(name = "description")
-        private String description;
+        String description;
 
         @Column(name = "detail_description", columnDefinition = "MEDIUMTEXT")
-        private String detailDescription;
+        String detailDescription;
 
         @Column(name = "list_price")
-        private Double listPrice;
+        Double listPrice;
 
         @Column(name = "sell_price")
-        private Double sellPrice;
+        Double sellPrice;
 
         @Column(name = "quantity")
-        private Integer quantity;
+        Integer quantity;
 
         @Column(name = "rate_average")
-        private Double rateAverage;
+        Double rateAverage;
 
         // @Column(name = "brand")
-        // private String brand;
+        // String brand;
 
         // @Column(name = "weight")
-        // private double weight;
+        // double weight;
 
         @ManyToMany(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
@@ -58,19 +61,19 @@ public class Product {
         // "product_id")
         // @JoinTable(name = "product_category", joinColumns = @JoinColumn(name =
         // "product_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
-        private List<Category> categoryList;
+        List<Category> categoryList;
 
         @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-        private List<Image> images;
+        List<Image> images;
 
         @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-        private List<Review> reviewList;
+        List<Review> reviewList;
 
         @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        private List<OrderDetail> orderDetailList;
+        List<OrderDetail> orderDetailList;
 
         @ManyToMany(
                         // fetch = FetchType.LAZY, cascade = {
@@ -80,6 +83,6 @@ public class Product {
                         mappedBy = "productList")
         // @JoinTable(name = "product_wishlist", joinColumns = @JoinColumn(name =
         // "product_id"), inverseJoinColumns = @JoinColumn(name = "wishlist_id"))
-        private List<Wishlist> wishlists;
+        List<Wishlist> wishlists;
 
 }

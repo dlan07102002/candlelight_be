@@ -10,35 +10,38 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Entity
 @Table(name = "reviews")
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Review {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "review_id")
-        private long reviewId;
+        long reviewId;
 
         @Column(name = "rate")
-        private float rate;
+        float rate;
 
         @Column(name = "comment", columnDefinition = "text")
-        private String comment;
+        String comment;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "product_id", nullable = false)
-        private Product product;
+        Product product;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "user_id", nullable = false)
-        private User user;
+        User user;
 
 }
