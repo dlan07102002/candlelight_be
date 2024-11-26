@@ -34,6 +34,7 @@ public class RegisterRequest {
     String username;
 
     @PasswordConstraints(min = 16)
+    @NotEmpty(message = "Password can not be empty")
     String password;
 
     @Enumerated(EnumType.STRING)

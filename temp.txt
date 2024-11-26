@@ -4,3 +4,4 @@ Vô hiệu hóa timestamp trong các class sinh tự động bởi MapStruct đ�
 Thiết lập mô hình component mặc định của MapStruct là spring (cho phép MapStruct hoạt động như một Spring Bean).
 -Amapstruct.verbose=true:
 Kích hoạt chế độ log chi tiết để debug quá trình ánh xạ của MapStruct.
+

@@ -20,7 +20,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import io.jsonwebtoken.Claims;
-
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import vn.duclan.candlelight_be.repository.InvalidatedTokenRepository;
 import vn.duclan.candlelight_be.repository.RoleRepository;
@@ -61,6 +61,7 @@ public class AccountService {
         this.invalidatedTokenRepository = invalidatedTokenRepository;
     }
 
+    @Transactional
     public UserResponse register(@Valid RegisterRequest request) {
 
         if (userRepository.existsByUsername(request.getUsername())) {
@@ -97,7 +98,7 @@ public class AccountService {
         // return ResponseEntity.ok("Registration successful!");
 
         // Insert user into DB
-        // userRepository.save(user);
+        userRepository.save(user);
 
         UserResponse userResponse = userMapper.toUserResponse(user);
 

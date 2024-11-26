@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
@@ -13,6 +14,7 @@ import java.util.List;
 @Entity
 @Data
 @Table(name = "users")
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
 
@@ -28,12 +30,10 @@ public class User {
         String firstName;
 
         @Column(name = "username")
-        @NotEmpty(message = "Username can not be empty")
+        // @NotEmpty(message = "Username can not be empty")
         String username;
 
         @Column(name = "password")
-        @NotEmpty(message = "Password can not be empty")
-        @Size(min = 8, max = 512)
         String password;
 
         @Enumerated(EnumType.STRING)
