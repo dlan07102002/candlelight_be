@@ -10,6 +10,7 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.TestPropertySource;
 
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
 import vn.duclan.candlelight_be.dto.response.UserResponse;
@@ -18,6 +19,7 @@ import vn.duclan.candlelight_be.model.User;
 import vn.duclan.candlelight_be.repository.UserRepository;
 
 @SpringBootTest
+@TestPropertySource("/test.properties") // Config to isolation
 public class AccountServiceTest {
     @Autowired
     private AccountService accountService;

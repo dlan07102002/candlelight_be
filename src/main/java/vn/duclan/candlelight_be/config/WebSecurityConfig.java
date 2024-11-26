@@ -3,6 +3,7 @@ package vn.duclan.candlelight_be.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -37,6 +38,8 @@ public class WebSecurityConfig {
 
     @Bean
     @Autowired
+    @ConditionalOnProperty(prefix = "spring", value = "datasource.driverClassName", havingValue = "com.mysql.cj.jdbc.Driver")
+
     public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider dap = new DaoAuthenticationProvider();
         dap.setUserDetailsService(userService);
@@ -50,6 +53,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
+
     public SecurityFilterChain SecurityFilterChain(HttpSecurity http)
             throws Exception {
         http.authorizeHttpRequests(

@@ -9,9 +9,11 @@ import org.mapstruct.control.MappingControl.Use;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
@@ -25,10 +27,11 @@ import vn.duclan.candlelight_be.service.AccountService;
 
 @Slf4j
 // Create logger avoid boilerplate code
-@SpringBootTest // Khởi động toàn bộ ngữ cảnh Spring (ApplicationContext) để test tích hợp.
+@SpringBootTest // Khởi động toàn bộ ngữ cảnh Spring (ApplicationContext) để test
+                // tích hợp.
 // helps to load the entire application context
-@AutoConfigureMockMvc
-// Create Mock request to Controller
+@AutoConfigureMockMvc // Create Mock request to Controller
+@TestPropertySource("/test.properties") // Config to isolation
 public class AccountControllerTest {
     @Autowired
     private MockMvc mockMvc;
