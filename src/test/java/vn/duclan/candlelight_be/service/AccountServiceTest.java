@@ -48,7 +48,8 @@ class AccountServiceTest {
                 .email("s.gintoki710@gmail.com")
                 .build();
 
-        loginRequest = LoginRequest.builder().username("john").password("123456").build();
+        loginRequest =
+                LoginRequest.builder().username("john").password("123456").build();
         response = UserResponse.builder()
                 .username("john")
                 .firstName("Jon")
@@ -63,7 +64,8 @@ class AccountServiceTest {
                 .email("s.gintoki710@gmail.com")
                 .build();
 
-        jwt = "eyJhbGciOiJIUzUxMiJ9.eyJ1aWQiOjUxLCJpc1N0YWZmIjpmYWxzZSwiaXNBZG1pbiI6dHJ1ZSwiaXNVc2VyIjpmYWxzZSwianRpIjoiN2FiZjBiNzMtMTJmYS00MzI4LWIzYzMtNTU5OTMxNjczMTRmIiwic3ViIjoiZHVjbGFuIiwiaWF0IjoxNzMyNzEzMzQ5LCJleHAiOjE3MzI3MTY5NDl9.1icvBM7T9u6NMe3QsA4FGZTQDAap8ULl1n7pgaFzs6JTHfj6OG18GEFMIKQo5itqwyHMYvJMEx0jMxOjLQEX2Q";
+        jwt =
+                "eyJhbGciOiJIUzUxMiJ9.eyJ1aWQiOjUxLCJpc1N0YWZmIjpmYWxzZSwiaXNBZG1pbiI6dHJ1ZSwiaXNVc2VyIjpmYWxzZSwianRpIjoiN2FiZjBiNzMtMTJmYS00MzI4LWIzYzMtNTU5OTMxNjczMTRmIiwic3ViIjoiZHVjbGFuIiwiaWF0IjoxNzMyNzEzMzQ5LCJleHAiOjE3MzI3MTY5NDl9.1icvBM7T9u6NMe3QsA4FGZTQDAap8ULl1n7pgaFzs6JTHfj6OG18GEFMIKQo5itqwyHMYvJMEx0jMxOjLQEX2Q";
     }
 
     @Test

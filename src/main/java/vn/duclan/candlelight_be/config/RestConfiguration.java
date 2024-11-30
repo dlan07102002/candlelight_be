@@ -3,7 +3,6 @@ package vn.duclan.candlelight_be.config;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.Type;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;

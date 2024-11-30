@@ -2,13 +2,14 @@ package vn.duclan.candlelight_be.service;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j
@@ -24,7 +25,9 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendEmail(String src, String dst, String subject, String text) {
         // Check String empty or not
-        if (!StringUtils.hasText(src) || !StringUtils.hasText(dst) || !StringUtils.hasText(subject)
+        if (!StringUtils.hasText(src)
+                || !StringUtils.hasText(dst)
+                || !StringUtils.hasText(subject)
                 || !StringUtils.hasText(text)) {
             log.error("Invalid email parameters: src={}, dst={}, subject={}", src, dst, subject);
             throw new IllegalArgumentException("Email parameters cannot be null or empty");

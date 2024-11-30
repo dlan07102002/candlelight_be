@@ -42,7 +42,10 @@ public class WebSecurityConfig {
 
     @Bean
     @Autowired
-    @ConditionalOnProperty(prefix = "spring", value = "datasource.driverClassName", havingValue = "com.mysql.cj.jdbc.Driver")
+    @ConditionalOnProperty(
+            prefix = "spring",
+            value = "datasource.driverClassName",
+            havingValue = "com.mysql.cj.jdbc.Driver")
     public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider dap = new DaoAuthenticationProvider();
         dap.setUserDetailsService(userService);

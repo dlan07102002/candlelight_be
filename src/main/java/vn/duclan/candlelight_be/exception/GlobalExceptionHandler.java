@@ -51,7 +51,8 @@ public class GlobalExceptionHandler {
                      * Value: là giá trị mà thuộc tính này nhận được (ví dụ: 10 đối với @Min(10)).
                      */
                     var constraintViolation = fieldError.unwrap(ConstraintViolation.class);
-                    Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+                    Map<String, Object> attributes =
+                            constraintViolation.getConstraintDescriptor().getAttributes();
 
                     return ValidationError.builder()
                             .field(fieldError.getField())

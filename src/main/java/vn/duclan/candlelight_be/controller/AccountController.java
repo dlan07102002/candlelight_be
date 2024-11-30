@@ -130,13 +130,11 @@ public class AccountController {
             @RequestBody UpdateInfoRequest request,
             @PathVariable String userId,
             @RequestHeader("Authorization") String authorization) {
-        APIResponse<UserResponse> apiResponse = accountService.updateInfo(authorization, Integer.parseInt(userId),
-                request);
+        APIResponse<UserResponse> apiResponse =
+                accountService.updateInfo(authorization, Integer.parseInt(userId), request);
 
-        if (apiResponse.getResult() != null)
-            return ResponseEntity.ok(apiResponse);
-        else
-            return ResponseEntity.badRequest().body(apiResponse);
+        if (apiResponse.getResult() != null) return ResponseEntity.ok(apiResponse);
+        else return ResponseEntity.badRequest().body(apiResponse);
     }
 
     @PostMapping("/refresh")

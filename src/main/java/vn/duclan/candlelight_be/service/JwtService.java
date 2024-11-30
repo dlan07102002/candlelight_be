@@ -11,7 +11,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import javax.crypto.SecretKey;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -23,6 +22,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
 import vn.duclan.candlelight_be.dto.request.RefreshRequest;
 import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
@@ -36,25 +36,28 @@ import vn.duclan.candlelight_be.repository.InvalidatedTokenRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
 
 @Component
+@Slf4j
 public class JwtService {
     // config secret key in application propeties
     @Value("${jwt.secretKey}")
     @NonFinal
-    protected String SECRET_KEY;
+    protected String secretKey;
 
     @Value("${jwt.valid-duration}")
     @NonFinal
-    protected long VALID_DURATION;
+    protected long validDuration;
 
     @Value("${jwt.refreshable-duration}")
     @NonFinal
-    protected long REFRESHABLE_DURATION;
+    protected long refreshDuration;
 
-    @Autowired
     private UserRepository userRepository;
-
-    @Autowired
     private InvalidatedTokenRepository invalidatedTokenRepository;
+
+    public JwtService(UserRepository userRepository, InvalidatedTokenRepository invalidatedTokenRepository) {
+        this.userRepository = userRepository;
+        this.invalidatedTokenRepository = invalidatedTokenRepository;
+    }
 
     // generate jwt base on username
     public String generateToken(String username) {
@@ -66,7 +69,7 @@ public class JwtService {
         boolean isAdmin = false;
         boolean isStaff = false;
         boolean isUser = false;
-        if (user != null && roleList.size() > 0) {
+        if (user != null && !roleList.isEmpty()) {
             for (Role role : roleList) {
                 if (role.getRoleName().equals("ADMIN")) {
                     isAdmin = true;
@@ -91,9 +94,8 @@ public class JwtService {
     // Tạo JWT với các claim đã chọn
     private String createToken(Map<String, Object> claims, String username) {
         Date currentDate = new Date();
-        // Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
         Date expirationDate =
-                new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
+                new Date(Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli());
 
         // When call builder() and provide claims, JJWT auto convert claims map to
         // payload
@@ -109,9 +111,9 @@ public class JwtService {
 
     // Get secret key
     private SecretKey key() {
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         if (keyBytes.length != 64) { // For HmacSHA512, ensure the key is 64 bytes
-            System.out.println(keyBytes.length);
+            log.info(keyBytes.length + "");
             throw new IllegalArgumentException("Invalid key length for HS512");
         }
         return Keys.hmacShaKeyFor(keyBytes);
@@ -154,7 +156,7 @@ public class JwtService {
     }
 
     // Extract isJWT expired
-    public Boolean isJWTExpired(String token, boolean isRefresh) {
+    public boolean isJWTExpired(String token, boolean isRefresh) {
         // :: -> method reference in Java 8
         if (token == null) {
             return true;
@@ -163,7 +165,7 @@ public class JwtService {
             Date expiredDate = isRefresh
                     ? new Date(getIssueDate(token)
                             .toInstant()
-                            .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                            .plus(refreshDuration, ChronoUnit.SECONDS)
                             .toEpochMilli())
                     : getExpirationDate(token);
             return expiredDate.before(new Date());
@@ -184,6 +186,7 @@ public class JwtService {
         // Kiểm tra tính hợp lệ của token
         IntrospectResponse introspectResponse =
                 introspect(IntrospectRequest.builder().token(token).build());
+        log.info("SECRET KEY: {} ", secretKey);
         if (!introspectResponse.isValid()) {
             throw new JwtException("Token invalid");
         }
@@ -198,7 +201,7 @@ public class JwtService {
         // Giải mã JWT và kiểm tra tính hợp lệ
         Claims claims = getAllClaimsFromToken(token);
 
-        // Kiểm tra token đã hết hạn chưa (dựa trên REFRESHABLE_DURATION)
+        // Kiểm tra token đã hết hạn chưa (dựa trên refreshDuration)
         if (isJWTExpired(token, true)) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
         }

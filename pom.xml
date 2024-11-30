@@ -177,10 +177,7 @@
 				<groupId>org.graalvm.buildtools</groupId>
 				<artifactId>native-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
+
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -235,14 +232,14 @@
 						</importOrder>
 					</java>
 				</configuration>
-				<!--				<executions>-->
-				<!--					<execution>-->
-				<!--						<phase>compile</phase>-->
-				<!--						<goals>-->
-				<!--							<goal>check</goal>-->
-				<!--						</goals>-->
-				<!--					</execution>-->
-				<!--				</executions>-->
+				<executions>
+					<execution>
+						<phase>compile</phase>
+						<goals>
+							<goal>apply</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

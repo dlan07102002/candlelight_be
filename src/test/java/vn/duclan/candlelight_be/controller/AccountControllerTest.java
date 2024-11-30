@@ -72,8 +72,8 @@ public class AccountControllerTest {
             Mockito.when(accountService.register(any())).thenReturn(response);
             // WHEN: request khi nào, THEN: Khi when xảy ra thì expect gì
             mockMvc.perform(MockMvcRequestBuilders.post("/account/register")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(content))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(content))
                     .andExpect(MockMvcResultMatchers.status().isBadRequest())
                     .andExpect(MockMvcResultMatchers.jsonPath("code").value(1002))
                     .andExpect(MockMvcResultMatchers.jsonPath("result[0].field").value("password"))
@@ -100,8 +100,8 @@ public class AccountControllerTest {
             Mockito.when(accountService.register(any())).thenReturn(response);
             // WHEN: request khi nào, THEN: Khi when xảy ra thì expect gì
             mockMvc.perform(MockMvcRequestBuilders.post("/account/register")
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .content(content))
+                            .contentType(MediaType.APPLICATION_JSON_VALUE)
+                            .content(content))
                     .andExpect(MockMvcResultMatchers.status().isOk())
                     .andExpect(MockMvcResultMatchers.jsonPath("code").value(1000))
                     .andExpect(MockMvcResultMatchers.jsonPath("result.username").value("john"));

@@ -8,7 +8,6 @@ import java.util.UUID;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
-import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
 import vn.duclan.candlelight_be.dto.request.LogoutRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
@@ -34,6 +34,7 @@ import vn.duclan.candlelight_be.repository.RoleRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
 
 @Service
+@Slf4j
 public class AccountService {
     private EmailServiceImpl emailService;
     private UserRepository userRepository;
@@ -88,7 +89,6 @@ public class AccountService {
         sendActiveEmail(request.getEmail(), request.getActivateCode());
 
         return userMapper.toUserResponse(user);
-
     }
 
     public String login(@Valid LoginRequest request) {
@@ -103,7 +103,8 @@ public class AccountService {
         String jit = claims.getId();
         Timestamp expiredTime = new Timestamp(claims.getExpiration().getTime());
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jit).expiredTime(expiredTime).build();
+        InvalidatedToken invalidatedToken =
+                InvalidatedToken.builder().id(jit).expiredTime(expiredTime).build();
         invalidatedTokenRepository.save(invalidatedToken);
     }
 
@@ -134,15 +135,15 @@ public class AccountService {
 
         String username = jwtService.getUsername(token);
 
-        User userFromToken = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
+        User userFromToken =
+                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
         User userById = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
         List<Role> roleList = userFromToken.getRoleList();
         boolean isAdmin = false;
 
-        if (userFromToken != null && roleList.size() > 0) {
+        if (userFromToken != null && !roleList.isEmpty()) {
             for (Role role : roleList) {
                 if (role.getRoleName().equals("ADMIN")) {
                     isAdmin = true;
@@ -158,12 +159,11 @@ public class AccountService {
             return apiResponse;
 
         } else {
-            if (request.getUsername() != null) {
-                if (!userRepository.findByUsername(request.getUsername()).isEmpty()) {
-                    apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
-                    apiResponse.setMessage("This username already exists");
-                    return apiResponse;
-                }
+            if (request.getUsername() != null
+                    && !userRepository.findByUsername(request.getUsername()).isEmpty()) {
+                apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
+                apiResponse.setMessage("This username already exists");
+                return apiResponse;
             }
 
             if (request.getPassword() != null) {
