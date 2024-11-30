@@ -25,5 +25,4 @@ public class PasswordValidator implements ConstraintValidator<PasswordConstraint
         min = constraints.min();
         PASSWORD_PATTERN = "^(?=.*[A-Z])(?=.*[@#$%^&+=])(?=.*\\d).{" + min + ",}$";
     }
-
 }

@@ -20,8 +20,8 @@ public class APIResponse<T> {
     // Or else, Lombok will skip it
     @Builder.Default
     int code = 1000;
+
     String message;
     // The return type change based API, so should use generic type
     T result;
-
 }

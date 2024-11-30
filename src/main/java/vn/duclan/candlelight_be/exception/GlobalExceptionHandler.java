@@ -5,14 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import jakarta.validation.ConstraintViolation;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.Size;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
 
 @ControllerAdvice
@@ -34,9 +33,7 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException exception) {
         // Get the error list
 
-        List<ValidationError> errors = exception.getBindingResult()
-                .getFieldErrors()
-                .stream()
+        List<ValidationError> errors = exception.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> {
                     // Get args that pass into Constraint
                     // ConstraintViolation: An Object in java stand for the violation when
@@ -56,10 +53,12 @@ public class GlobalExceptionHandler {
                     var constraintViolation = fieldError.unwrap(ConstraintViolation.class);
                     Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
 
-                    return ValidationError.builder().field(fieldError.getField())
-                            .message(Objects.nonNull(attributes)
-                                    ? mapAttribute(fieldError.getDefaultMessage(), attributes)
-                                    : fieldError.getDefaultMessage())
+                    return ValidationError.builder()
+                            .field(fieldError.getField())
+                            .message(
+                                    Objects.nonNull(attributes)
+                                            ? mapAttribute(fieldError.getDefaultMessage(), attributes)
+                                            : fieldError.getDefaultMessage())
                             .build();
                 })
                 .toList();
@@ -85,12 +84,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<APIResponse<?>> exceptionHandler(AccessDeniedException exception) {
         ErrorCode errorCode = ErrorCode.UNAUTHORIZED;
         return ResponseEntity.status(errorCode.getStatusCode())
-                .body(APIResponse.builder().code(errorCode.getCode()).message(errorCode.getMessage()).build());
+                .body(APIResponse.builder()
+                        .code(errorCode.getCode())
+                        .message(errorCode.getMessage())
+                        .build());
     }
 
     private String mapAttribute(String message, Map<String, Object> attributes) {
         String minValue = String.valueOf(attributes.get(MIN_ATTRIBUTE));
         return message.replace("{" + MIN_ATTRIBUTE + "}", minValue);
     }
-
 }

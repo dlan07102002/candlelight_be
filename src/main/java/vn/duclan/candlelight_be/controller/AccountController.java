@@ -2,8 +2,6 @@ package vn.duclan.candlelight_be.controller;
 
 import java.text.ParseException;
 
-import org.apache.tomcat.util.http.parser.Authorization;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -21,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.core.io.JsonEOFException;
 
 import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
@@ -49,8 +45,11 @@ public class AccountController {
     private UserService userService;
     private JwtService jwtService;
 
-    public AccountController(AccountService accountService, AuthenticationManager authenticationManager,
-            UserService userService, JwtService jwtService) {
+    public AccountController(
+            AccountService accountService,
+            AuthenticationManager authenticationManager,
+            UserService userService,
+            JwtService jwtService) {
         this.accountService = accountService;
         this.authenticationManager = authenticationManager;
         this.userService = userService;
@@ -107,6 +106,7 @@ public class AccountController {
             apiResponse.setMessage(errorCode.getMessage());
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiResponse);
         } catch (AuthenticationException e) {
+            System.out.println(e.getMessage());
             apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
             apiResponse.setMessage(ErrorCode.UNAUTHENTICATION.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
@@ -126,8 +126,10 @@ public class AccountController {
 
     @PatchMapping("/update/{userId}")
     @CrossOrigin(origins = "http://localhost:5173")
-    public ResponseEntity<APIResponse<UserResponse>> update(@RequestBody UpdateInfoRequest request,
-            @PathVariable String userId, @RequestHeader("Authorization") String authorization) {
+    public ResponseEntity<APIResponse<UserResponse>> update(
+            @RequestBody UpdateInfoRequest request,
+            @PathVariable String userId,
+            @RequestHeader("Authorization") String authorization) {
         APIResponse<UserResponse> apiResponse = accountService.updateInfo(authorization, Integer.parseInt(userId),
                 request);
 
@@ -135,7 +137,6 @@ public class AccountController {
             return ResponseEntity.ok(apiResponse);
         else
             return ResponseEntity.badRequest().body(apiResponse);
-
     }
 
     @PostMapping("/refresh")
@@ -154,5 +155,4 @@ public class AccountController {
         var result = jwtService.introspect(request);
         return APIResponse.<IntrospectResponse>builder().result(result).build();
     }
-
 }

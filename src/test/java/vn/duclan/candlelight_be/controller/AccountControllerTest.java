@@ -1,15 +1,12 @@
 package vn.duclan.candlelight_be.controller;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mapstruct.control.MappingControl.Use;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -28,7 +25,7 @@ import vn.duclan.candlelight_be.service.AccountService;
 @Slf4j
 // Create logger avoid boilerplate code
 @SpringBootTest // Khởi động toàn bộ ngữ cảnh Spring (ApplicationContext) để test
-                // tích hợp.
+// tích hợp.
 // helps to load the entire application context
 @AutoConfigureMockMvc // Create Mock request to Controller
 @TestPropertySource("/test.properties") // Config to isolation
@@ -45,12 +42,19 @@ public class AccountControllerTest {
 
     @BeforeEach // Chỉ định một phương thức sẽ được chạy trước mỗi test case.
     private void initData() {
-        request = RegisterRequest.builder().username("john")
-                .firstName("John").lastName("Doe").password("@L12345678912345678").email("s.gintoki710@gmail.com")
+        request = RegisterRequest.builder()
+                .username("john")
+                .firstName("John")
+                .lastName("Doe")
+                .password("@L12345678912345678")
+                .email("s.gintoki710@gmail.com")
                 .build();
-        response = UserResponse.builder().username("john")
-                .firstName("Jon").lastName("Doe").email("s.gintoki710@gmail.com").build();
-
+        response = UserResponse.builder()
+                .username("john")
+                .firstName("Jon")
+                .lastName("Doe")
+                .email("s.gintoki710@gmail.com")
+                .build();
     }
 
     @Test // Đánh dấu một phương thức là test case.
@@ -73,13 +77,13 @@ public class AccountControllerTest {
                     .andExpect(MockMvcResultMatchers.status().isBadRequest())
                     .andExpect(MockMvcResultMatchers.jsonPath("code").value(1002))
                     .andExpect(MockMvcResultMatchers.jsonPath("result[0].field").value("password"))
-                    .andExpect(MockMvcResultMatchers.jsonPath("result[0].message").value(
-                            "Password must have at least 16 characters, including one uppercase letter, one special character, and one number."));
+                    .andExpect(
+                            MockMvcResultMatchers.jsonPath("result[0].message")
+                                    .value(
+                                            "Password must have at least 16 characters, including one uppercase letter, one special character, and one number."));
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
 
     @Test
@@ -102,10 +106,7 @@ public class AccountControllerTest {
                     .andExpect(MockMvcResultMatchers.jsonPath("code").value(1000))
                     .andExpect(MockMvcResultMatchers.jsonPath("result.username").value("john"));
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-
     }
-
 }

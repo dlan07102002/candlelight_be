@@ -1,30 +1,21 @@
 package vn.duclan.candlelight_be.service;
 
-import java.sql.Date;
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
-import io.jsonwebtoken.Claims;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import vn.duclan.candlelight_be.repository.InvalidatedTokenRepository;
-import vn.duclan.candlelight_be.repository.RoleRepository;
-import vn.duclan.candlelight_be.repository.UserRepository;
+
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import io.jsonwebtoken.Claims;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
 import vn.duclan.candlelight_be.dto.request.LogoutRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
@@ -38,6 +29,9 @@ import vn.duclan.candlelight_be.model.InvalidatedToken;
 import vn.duclan.candlelight_be.model.Notification;
 import vn.duclan.candlelight_be.model.Role;
 import vn.duclan.candlelight_be.model.User;
+import vn.duclan.candlelight_be.repository.InvalidatedTokenRepository;
+import vn.duclan.candlelight_be.repository.RoleRepository;
+import vn.duclan.candlelight_be.repository.UserRepository;
 
 @Service
 public class AccountService {
@@ -49,9 +43,14 @@ public class AccountService {
     private JwtService jwtService;
     private InvalidatedTokenRepository invalidatedTokenRepository;
 
-    public AccountService(UserRepository userRepository, EmailServiceImpl emailService,
-            BCryptPasswordEncoder passwordEncoder, UserMapper userMapper, RoleRepository roleRepository,
-            JwtService jwtService, InvalidatedTokenRepository invalidatedTokenRepository) {
+    public AccountService(
+            UserRepository userRepository,
+            EmailServiceImpl emailService,
+            BCryptPasswordEncoder passwordEncoder,
+            UserMapper userMapper,
+            RoleRepository roleRepository,
+            JwtService jwtService,
+            InvalidatedTokenRepository invalidatedTokenRepository) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
@@ -63,21 +62,6 @@ public class AccountService {
 
     @Transactional
     public UserResponse register(@Valid RegisterRequest request) {
-
-        if (userRepository.existsByUsername(request.getUsername())) {
-            // return ResponseEntity.badRequest()
-            // .body(new Notification("Username already exists. Please choose a different
-            // one."));
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
-
-        if (userRepository.existsByEmail(request.getEmail())) {
-            // return ResponseEntity.badRequest()
-            // .body(new Notification("Email already exists. Please choose a different
-            // one."));
-            throw new AppException(ErrorCode.USER_EXISTED);
-        }
-
         // Encoding password
         String encryptPassword = passwordEncoder.encode(request.getPassword());
         request.setPassword(encryptPassword);
@@ -85,8 +69,7 @@ public class AccountService {
         // set Activate code
         request.setActivateCode(generateActivateCode());
 
-        // send email to User for activation account
-        sendActiveEmail(request.getEmail(), request.getActivateCode());
+        // Insert user into DB
         User user = userMapper.toUser(request);
         Role userRole = new Role();
 
@@ -95,14 +78,17 @@ public class AccountService {
         roleList.add(roleRepository.findByRoleName("USER"));
 
         user.setRoleList(roleList);
-        // return ResponseEntity.ok("Registration successful!");
+        try {
+            userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            throw new AppException(ErrorCode.USER_EXISTED);
+        }
 
-        // Insert user into DB
-        userRepository.save(user);
+        // send email to User for activation account
+        sendActiveEmail(request.getEmail(), request.getActivateCode());
 
-        UserResponse userResponse = userMapper.toUserResponse(user);
+        return userMapper.toUserResponse(user);
 
-        return userResponse;
     }
 
     public String login(@Valid LoginRequest request) {
@@ -110,7 +96,6 @@ public class AccountService {
         String jwt = jwtService.generateToken(request.getUsername());
 
         return jwt;
-
     }
 
     public void logout(LogoutRequest request) {
@@ -128,9 +113,8 @@ public class AccountService {
             return ResponseEntity.badRequest().body("User is exists");
         }
 
-        if (user.getIsActivate()) {
+        if (user.getIsActivate().booleanValue()) {
             return ResponseEntity.badRequest().body(new Notification("The account has already been activated!"));
-
         }
 
         if (activateCode.equals(user.getActivateCode())) {
@@ -142,8 +126,7 @@ public class AccountService {
         }
     }
 
-    public APIResponse<UserResponse> updateInfo(String authorization, int userId,
-            UpdateInfoRequest request) {
+    public APIResponse<UserResponse> updateInfo(String authorization, int userId, UpdateInfoRequest request) {
         APIResponse<UserResponse> apiResponse = new APIResponse<>();
 
         // Get token from Header authorization field
@@ -154,8 +137,7 @@ public class AccountService {
         User userFromToken = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
-        User userById = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
+        User userById = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
         List<Role> roleList = userFromToken.getRoleList();
         boolean isAdmin = false;
@@ -166,7 +148,6 @@ public class AccountService {
                     isAdmin = true;
                     break;
                 }
-
             }
         }
 
@@ -191,8 +172,7 @@ public class AccountService {
                 request.setPassword(encryptPassword);
             }
 
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User Id is not valid"));
+            User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User Id is not valid"));
             userMapper.updateUser(user, request);
             userRepository.saveAndFlush(user);
 
@@ -200,9 +180,7 @@ public class AccountService {
             apiResponse.setMessage("Update Successful.");
             apiResponse.setResult(userMapper.toUserResponse(user));
             return apiResponse;
-
         }
-
     }
 
     public String generateActivateCode() {
@@ -214,33 +192,36 @@ public class AccountService {
         String url = "http://localhost:5173/activate/" + email + "/" + activateCode;
         String subject = "Complete Your Registration: Activate Your Candlelight.com Account";
 
-        String content = "<html>" +
-                "<head>" +
-                "<style>" +
-                "body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; }" +
-                ".container { background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }"
-                +
-                "h1 { color: #333; }" +
-                ".code { font-size: 24px; font-weight: bold; color: #ffffff; background-color: #007bff; padding: 10px; border-radius: 5px; display: inline-block; }"
-                +
-                ".footer { margin-top: 20px; font-size: 14px; color: #666; }" +
-                "a { color: #007bff; text-decoration: none; }" +
-                "a:hover { text-decoration: underline; }" +
-                "</style>" +
-                "</head>" +
-                "<body>" +
-                "<div class='container'>" +
-                "<h1>Account Activation</h1>" +
-                "<p>To proceed, please enter the following code to activate your account:</p>" +
-                "<div class='code'>" + activateCode + "</div>" +
-                "<p>Or click the link below to activate your account:</p>" +
-                "<p><a href='" + url + "'>" + url + "</a></p>" +
-                "<div class='footer'>Thank you for choosing Candlelight.com!</div>" +
-                "</div>" +
-                "</body>" +
-                "</html>";
+        String content = "<html>"
+                + "<head>"
+                + "<style>"
+                + "body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; }"
+                + ".container { background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }"
+                + "h1 { color: #333; }"
+                + ".code { font-size: 24px; font-weight: bold; color: #ffffff; background-color: #007bff; padding: 10px; border-radius: 5px; display: inline-block; }"
+                + ".footer { margin-top: 20px; font-size: 14px; color: #666; }"
+                + "a { color: #007bff; text-decoration: none; }"
+                + "a:hover { text-decoration: underline; }"
+                + "</style>"
+                + "</head>"
+                + "<body>"
+                + "<div class='container'>"
+                + "<h1>Account Activation</h1>"
+                + "<p>To proceed, please enter the following code to activate your account:</p>"
+                + "<div class='code'>"
+                + activateCode
+                + "</div>"
+                + "<p>Or click the link below to activate your account:</p>"
+                + "<p><a href='"
+                + url
+                + "'>"
+                + url
+                + "</a></p>"
+                + "<div class='footer'>Thank you for choosing Candlelight.com!</div>"
+                + "</div>"
+                + "</body>"
+                + "</html>";
 
         emailService.sendEmail("s.gintoki710@gmail.com", email, subject, content);
     }
-
 }

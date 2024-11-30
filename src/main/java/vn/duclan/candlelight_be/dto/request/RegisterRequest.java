@@ -1,14 +1,11 @@
 package vn.duclan.candlelight_be.dto.request;
 
-import org.springframework.boot.context.properties.bind.DefaultValue;
-
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,7 +30,7 @@ public class RegisterRequest {
     @Size(min = 3, message = "Username must have at least {min} characters")
     String username;
 
-    @PasswordConstraints(min = 16)
+    @PasswordConstraints(min = 8)
     @NotEmpty(message = "Password can not be empty")
     String password;
 
@@ -49,6 +46,6 @@ public class RegisterRequest {
 
     @Builder.Default
     Boolean isActivate = false;
-    String activateCode;
 
+    String activateCode;
 }

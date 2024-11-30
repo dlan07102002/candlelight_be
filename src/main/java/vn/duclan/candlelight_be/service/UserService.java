@@ -8,5 +8,4 @@ public interface UserService extends UserDetailsService {
     public User findByUsername(String username);
 
     public User findById(int id);
-
 }

@@ -1,9 +1,9 @@
 package vn.duclan.candlelight_be.dto.response;
 
-import org.hibernate.validator.constraints.UniqueElements;
-
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+
+import org.hibernate.validator.constraints.UniqueElements;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -36,5 +36,4 @@ public class UserResponse {
     String orderAddress;
     String deliveryAddress;
     Boolean isActivate;
-
 }

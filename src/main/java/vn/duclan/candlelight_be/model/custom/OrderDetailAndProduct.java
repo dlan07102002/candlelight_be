@@ -27,5 +27,4 @@ public class OrderDetailAndProduct {
         this.orderDetail = orderDetail;
         this.product = product;
     }
-
 }

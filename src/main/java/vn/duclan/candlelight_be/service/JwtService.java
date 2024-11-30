@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
-
 import javax.crypto.SecretKey;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-
 import lombok.experimental.NonFinal;
-
 import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
 import vn.duclan.candlelight_be.dto.request.RefreshRequest;
 import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
@@ -63,8 +60,8 @@ public class JwtService {
     public String generateToken(String username) {
 
         Map<String, Object> claims = new HashMap<>();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
+        User user =
+                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
         List<Role> roleList = user.getRoleList();
         boolean isAdmin = false;
         boolean isStaff = false;
@@ -95,7 +92,8 @@ public class JwtService {
     private String createToken(Map<String, Object> claims, String username) {
         Date currentDate = new Date();
         // Date expireDate = new Date(currentDate.getTime() + jwtExpirationDate);
-        Date expirationDate = new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
+        Date expirationDate =
+                new Date(Instant.now().plus(VALID_DURATION, ChronoUnit.SECONDS).toEpochMilli());
 
         // When call builder() and provide claims, JJWT auto convert claims map to
         // payload
@@ -135,7 +133,6 @@ public class JwtService {
              */
             return e.getClaims();
         }
-
     }
 
     public <T> T getClaim(String token, Function<Claims, T> claimsTFunction) {
@@ -164,11 +161,12 @@ public class JwtService {
 
         } else {
             Date expiredDate = isRefresh
-                    ? new Date(getIssueDate(token).toInstant().plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
+                    ? new Date(getIssueDate(token)
+                            .toInstant()
+                            .plus(REFRESHABLE_DURATION, ChronoUnit.SECONDS)
                             .toEpochMilli())
                     : getExpirationDate(token);
             return expiredDate.before(new Date());
-
         }
     }
 
@@ -181,16 +179,15 @@ public class JwtService {
 
     // validation Token
     public Boolean validateToken(String token, UserDetails userDetails, boolean isRefresh) throws JwtException {
-        if (token == null)
-            return false;
+        if (token == null) return false;
         final String username = getUsername(token);
         // Kiểm tra tính hợp lệ của token
-        IntrospectResponse introspectResponse = introspect(IntrospectRequest.builder().token(token).build());
+        IntrospectResponse introspectResponse =
+                introspect(IntrospectRequest.builder().token(token).build());
         if (!introspectResponse.isValid()) {
             throw new JwtException("Token invalid");
         }
         return (username.equals(userDetails.getUsername()) && !isJWTExpired(token, isRefresh));
-
     }
 
     public JwtResponse refreshToken(RefreshRequest request) {
@@ -209,25 +206,21 @@ public class JwtService {
         // Nếu đã logout thì không thể dùng token đó để refresh
         if (invalidatedTokenRepository.existsById(jit)) {
             throw new AppException(ErrorCode.INVALID_TOKEN);
-
         }
 
         // Đánh dấu token cũ là không hợp lệ (nếu cần lưu trạng thái)
         String tokenId = claims.getId();
-        invalidatedTokenRepository.save(
-                InvalidatedToken.builder()
-                        .id(tokenId)
-                        .expiredTime(new Timestamp(claims.getExpiration().getTime()))
-                        .build());
+        invalidatedTokenRepository.save(InvalidatedToken.builder()
+                .id(tokenId)
+                .expiredTime(new Timestamp(claims.getExpiration().getTime()))
+                .build());
 
         // Lấy username từ token và tạo Access Token mới
         String username = claims.getSubject();
         String newToken = generateToken(username);
 
         // Trả về token mới
-        return JwtResponse.builder()
-                .jwt(newToken)
-                .build();
+        return JwtResponse.builder().jwt(newToken).build();
     }
 
     public IntrospectResponse introspect(IntrospectRequest request) {
@@ -241,7 +234,6 @@ public class JwtService {
             }
         } catch (Exception e) {
             isValid = false;
-
         }
         return IntrospectResponse.builder().valid(isValid).build();
     }

@@ -28,8 +28,7 @@ public class ProductController {
     @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
     public ResponseEntity<?> addProduct(@RequestBody Product product) {
         productService.save(product);
-        return ResponseEntity.ok(productService.findTopByOrderByProductIdDesc().getProductId()
-                + "");
+        return ResponseEntity.ok(productService.findTopByOrderByProductIdDesc().getProductId() + "");
     }
 
     @PostMapping("/images")
@@ -39,6 +38,5 @@ public class ProductController {
 
         productService.insertImage(image);
         return ResponseEntity.ok("Successful added image");
-
     }
 }

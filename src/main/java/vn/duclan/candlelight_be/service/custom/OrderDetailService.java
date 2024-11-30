@@ -5,15 +5,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import vn.duclan.candlelight_be.model.Order;
+import vn.duclan.candlelight_be.model.OrderDetail;
+import vn.duclan.candlelight_be.model.Product;
+import vn.duclan.candlelight_be.model.User;
 import vn.duclan.candlelight_be.repository.ImageRepository;
 import vn.duclan.candlelight_be.repository.OrderDetailRepository;
 import vn.duclan.candlelight_be.repository.OrderRepository;
 import vn.duclan.candlelight_be.repository.ProductRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
-import vn.duclan.candlelight_be.model.Order;
-import vn.duclan.candlelight_be.model.OrderDetail;
-import vn.duclan.candlelight_be.model.Product;
-import vn.duclan.candlelight_be.model.User;
 
 @Service
 public class OrderDetailService {
@@ -23,8 +23,12 @@ public class OrderDetailService {
     private final OrderRepository orderRepository;
 
     @Autowired
-    public OrderDetailService(OrderDetailRepository orderDetailRepository, ProductRepository productRepository,
-            ImageRepository imageRepository, UserRepository userRepository, OrderRepository orderRepository) {
+    public OrderDetailService(
+            OrderDetailRepository orderDetailRepository,
+            ProductRepository productRepository,
+            ImageRepository imageRepository,
+            UserRepository userRepository,
+            OrderRepository orderRepository) {
         this.orderDetailRepository = orderDetailRepository;
         this.productRepository = productRepository;
         this.userRepository = userRepository;
@@ -64,5 +68,4 @@ public class OrderDetailService {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("OrderDetail saved successfully with ID: " + orderDetail.getOrderDetailId());
     }
-
 }

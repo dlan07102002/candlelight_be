@@ -1,19 +1,23 @@
 package vn.duclan.candlelight_be.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Data;
-import lombok.experimental.FieldDefaults;
-
+import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.FieldDefaults;
+
 @Entity
-@Data
 @Table(name = "users")
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
@@ -29,7 +33,8 @@ public class User {
         @Column(name = "first_name")
         String firstName;
 
-        @Column(name = "username")
+        // COLLATE utf8mb4_unicode_ci: pb upper and lower case
+        @Column(name = "username", unique = true, columnDefinition = "VARCHAR(255) COLLATE utf8mb4_unicode_ci")
         // @NotEmpty(message = "Username can not be empty")
         String username;
 
@@ -40,7 +45,7 @@ public class User {
         @Column(name = "gender")
         Gender gender;
 
-        @Column(name = "email")
+        @Column(name = "email", unique = true)
         @Email(message = "Invalid email address.")
         String email;
 
@@ -68,25 +73,28 @@ public class User {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        List<Review> reviewList;
+        @Builder.Default
+        List<Review> reviewList = new ArrayList<>();
 
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        List<Wishlist> wishlists;
+        @Builder.Default
+        List<Wishlist> wishlists = new ArrayList<>();
 
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        List<Order> orderList;
+        @Builder.Default
+        List<Order> orderList = new ArrayList<>();
 
         @ManyToMany(fetch = FetchType.EAGER, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-        List<Role> roleList;
-
+        @Builder.Default
+        List<Role> roleList = new ArrayList<>();
 }

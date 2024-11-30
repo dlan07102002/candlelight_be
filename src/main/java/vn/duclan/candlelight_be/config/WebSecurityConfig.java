@@ -27,6 +27,10 @@ import vn.duclan.candlelight_be.service.UserService;
 @Configuration
 @AllArgsConstructor
 public class WebSecurityConfig {
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String ROLE_STAFF = "STAFF";
+    private static final String ROLE_USER = "USER";
+
     private JwtFilter filter;
     private CustomAccessDeniedHandler accessDeniedHandler;
     private CustomAuthenticationEntryPoint authenticationEntryPoint;
@@ -39,7 +43,6 @@ public class WebSecurityConfig {
     @Bean
     @Autowired
     @ConditionalOnProperty(prefix = "spring", value = "datasource.driverClassName", havingValue = "com.mysql.cj.jdbc.Driver")
-
     public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider dap = new DaoAuthenticationProvider();
         dap.setUserDetailsService(userService);
@@ -53,32 +56,32 @@ public class WebSecurityConfig {
     }
 
     @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests(configurer -> configurer
+                .requestMatchers(HttpMethod.GET, Endpoints.PUBLIC_GET_ENDPOINTS)
+                .permitAll()
+                // If using hasAuthority, in DB rolename is ADMIN, but if using hasRole, must
+                // saved as ROLE_ADMIN. hasAuthority does not auto add prefix ROLE
+                .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS)
+                .permitAll()
+                .requestMatchers(HttpMethod.PATCH, Endpoints.USER_PATCH_ENDPOINTS)
+                .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.DELETE, Endpoints.USER_DELETE_ENDPOINTS)
+                .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS)
+                .hasAuthority(ROLE_ADMIN)
+                .requestMatchers(HttpMethod.POST, Endpoints.ADMIN_POST_ENDPOINTS)
+                .hasAuthority(ROLE_ADMIN));
 
-    public SecurityFilterChain SecurityFilterChain(HttpSecurity http)
-            throws Exception {
-        http.authorizeHttpRequests(
-                configurer -> configurer.requestMatchers(HttpMethod.GET, Endpoints.PUBLIC_GET_ENDPOINTS).permitAll()
-                        // If using hasAuthority, in DB rolename is ADMIN, but if using hasRole, must
-                        // saved as ROLE_ADMIN. hasAuthority does not auto add prefix ROLE
-                        .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS).permitAll()
-                        .requestMatchers(HttpMethod.PATCH, Endpoints.USER_PATCH_ENDPOINTS)
-                        .hasAnyAuthority("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, Endpoints.USER_DELETE_ENDPOINTS)
-                        .hasAnyAuthority("USER", "ADMIN")
-                        .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS).hasAuthority("ADMIN")
-                        .requestMatchers(HttpMethod.POST, Endpoints.ADMIN_POST_ENDPOINTS).hasAuthority("ADMIN"));
-        ;
         http.httpBasic(Customizer.withDefaults());
 
-        http.cors(cors -> {
-            cors.configurationSource(request -> {
-                CorsConfiguration corsConfig = new CorsConfiguration();
-                corsConfig.addAllowedOrigin(Endpoints.FE_HOST);
-                corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE"));
-                corsConfig.addAllowedHeader("*");
-                return corsConfig;
-            });
-        });
+        http.cors(cors -> cors.configurationSource(request -> {
+            CorsConfiguration corsConfig = new CorsConfiguration();
+            corsConfig.addAllowedOrigin(Endpoints.FE_HOST);
+            corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE"));
+            corsConfig.addAllowedHeader("*");
+            return corsConfig;
+        }));
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         // add filter
@@ -92,6 +95,5 @@ public class WebSecurityConfig {
         });
 
         return http.build();
-
     }
 }
