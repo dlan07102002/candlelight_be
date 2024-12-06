@@ -3,6 +3,7 @@ package vn.duclan.candlelight_be.controller;
 import java.text.ParseException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -74,48 +75,32 @@ public class AccountController {
         return response;
     }
 
+    // } catch (AppException e) {
+    // ErrorCode errorCode = e.getErrorCode();
+    // apiResponse.setCode(errorCode.getCode());
+    // apiResponse.setMessage(errorCode.getMessage());
+    // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiResponse);
+    // } catch (AuthenticationException e) {
+    // System.out.println(e.getMessage());
+    // apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
+    // apiResponse.setMessage(ErrorCode.UNAUTHENTICATION.getMessage());
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
+    // }
     @PostMapping("/login")
     @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<APIResponse<String>> login(@RequestBody LoginRequest loginRequest) {
         APIResponse<String> apiResponse = new APIResponse<>();
+
         try {
-            // Authenticating
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
-
-            // Check isActivate
-            User user = userService.findByUsername(loginRequest.getUsername());
-
-            if (!user.getIsActivate()) {
-                // "Account is not activated. Please activate your account."
-                throw new AppException(ErrorCode.ACTIVATION_ERROR);
-            }
-
-            // Tạo token nếu xác thực thành công
-            if (authentication.isAuthenticated()) {
-                String jwt = accountService.login(loginRequest);
-                apiResponse.setCode(HttpStatus.OK.value());
-                apiResponse.setMessage("Login successful");
-                apiResponse.setResult(jwt);
-                return ResponseEntity.ok(apiResponse);
-            }
+            apiResponse = accountService.login(loginRequest);
+            return ResponseEntity.ok(apiResponse);
 
         } catch (AppException e) {
-            ErrorCode errorCode = e.getErrorCode();
-            apiResponse.setCode(errorCode.getCode());
-            apiResponse.setMessage(errorCode.getMessage());
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiResponse);
-        } catch (AuthenticationException e) {
-            System.out.println(e.getMessage());
-            apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
-            apiResponse.setMessage(ErrorCode.UNAUTHENTICATION.getMessage());
+            apiResponse.setCode(e.getErrorCode().getCode());
+            apiResponse.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
         }
 
-        // Trường hợp bất thường (lý do không hợp lệ)
-        apiResponse.setCode(HttpStatus.UNAUTHORIZED.value());
-        apiResponse.setMessage("Invalid username or password");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
     }
 
     @PostMapping("/logout")
@@ -130,11 +115,13 @@ public class AccountController {
             @RequestBody UpdateInfoRequest request,
             @PathVariable String userId,
             @RequestHeader("Authorization") String authorization) {
-        APIResponse<UserResponse> apiResponse =
-                accountService.updateInfo(authorization, Integer.parseInt(userId), request);
+        APIResponse<UserResponse> apiResponse = accountService.updateInfo(authorization, Integer.parseInt(userId),
+                request);
 
-        if (apiResponse.getResult() != null) return ResponseEntity.ok(apiResponse);
-        else return ResponseEntity.badRequest().body(apiResponse);
+        if (apiResponse.getResult() != null)
+            return ResponseEntity.ok(apiResponse);
+        else
+            return ResponseEntity.badRequest().body(apiResponse);
     }
 
     @PostMapping("/refresh")

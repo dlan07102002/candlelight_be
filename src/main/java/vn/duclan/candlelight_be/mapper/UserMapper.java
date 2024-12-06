@@ -13,10 +13,7 @@ import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
 import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.model.User;
 
-@Mapper(
-        componentModel = "spring",
-        nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS,
-        nullValueMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
+@Mapper(componentModel = "spring", nullValueCheckStrategy = NullValueCheckStrategy.ALWAYS, nullValueMappingStrategy = NullValueMappingStrategy.RETURN_DEFAULT)
 public interface UserMapper {
 
     // Ánh xạ ngược từ RegisterRequest sang User

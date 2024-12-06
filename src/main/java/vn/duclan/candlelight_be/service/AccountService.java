@@ -11,6 +11,10 @@ import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -36,22 +40,24 @@ import vn.duclan.candlelight_be.repository.UserRepository;
 @Service
 @Slf4j
 public class AccountService {
-    private EmailServiceImpl emailService;
+    private EmailService emailService;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
     private BCryptPasswordEncoder passwordEncoder;
     private UserMapper userMapper;
     private JwtService jwtService;
     private InvalidatedTokenRepository invalidatedTokenRepository;
+    private AuthenticationManager authenticationManager;
 
     public AccountService(
             UserRepository userRepository,
-            EmailServiceImpl emailService,
+            EmailService emailService,
             BCryptPasswordEncoder passwordEncoder,
             UserMapper userMapper,
             RoleRepository roleRepository,
             JwtService jwtService,
-            InvalidatedTokenRepository invalidatedTokenRepository) {
+            InvalidatedTokenRepository invalidatedTokenRepository,
+            AuthenticationManager authenticationManager) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
@@ -59,6 +65,8 @@ public class AccountService {
         this.roleRepository = roleRepository;
         this.jwtService = jwtService;
         this.invalidatedTokenRepository = invalidatedTokenRepository;
+        this.authenticationManager = authenticationManager;
+
     }
 
     @Transactional
@@ -91,11 +99,43 @@ public class AccountService {
         return userMapper.toUserResponse(user);
     }
 
-    public String login(@Valid LoginRequest request) {
+    private Authentication authenticateUser(LoginRequest loginRequest) {
+        try {
+            return authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword()));
+        } catch (AuthenticationException e) {
+            throw new AppException(ErrorCode.UNAUTHORIZED);
+        }
+    }
 
-        String jwt = jwtService.generateToken(request.getUsername());
+    public APIResponse<String> login(@Valid LoginRequest loginRequest) {
+        APIResponse<String> apiResponse = new APIResponse<>();
 
-        return jwt;
+        // Authenticate user
+        Authentication authentication = authenticateUser(loginRequest);
+
+        // Check isActivate
+        User user = userRepository.findByUsername(loginRequest.getUsername())
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
+
+        if (!user.getIsActivate()) {
+            // "Account is not activated. Please activate your account."
+            throw new AppException(ErrorCode.ACTIVATION_ERROR);
+        }
+
+        // Generate token if authentication success
+        String jwt = "";
+        if (authentication.isAuthenticated()) {
+            jwt = jwtService.generateToken(loginRequest.getUsername());
+            apiResponse.setCode(HttpStatus.OK.value());
+            apiResponse.setMessage("Login successful");
+            apiResponse.setResult(jwt);
+
+        }
+        return apiResponse;
+
     }
 
     public void logout(LogoutRequest request) {
@@ -103,8 +143,7 @@ public class AccountService {
         String jit = claims.getId();
         Timestamp expiredTime = new Timestamp(claims.getExpiration().getTime());
 
-        InvalidatedToken invalidatedToken =
-                InvalidatedToken.builder().id(jit).expiredTime(expiredTime).build();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder().id(jit).expiredTime(expiredTime).build();
         invalidatedTokenRepository.save(invalidatedToken);
     }
 
@@ -135,8 +174,8 @@ public class AccountService {
 
         String username = jwtService.getUsername(token);
 
-        User userFromToken =
-                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
+        User userFromToken = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 
         User userById = userRepository.findById(userId).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
 

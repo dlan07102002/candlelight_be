@@ -1,6 +1,5 @@
 package vn.duclan.candlelight_be.controller.custom;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,8 +13,11 @@ import vn.duclan.candlelight_be.service.custom.OrderDetailService;
 @RestController
 @RequestMapping("/api/order-detail")
 public class OrderDetailController {
-    @Autowired
     private OrderDetailService orderDetailService;
+
+    public OrderDetailController(OrderDetailService orderDetailService) {
+        this.orderDetailService = orderDetailService;
+    }
 
     @PostMapping
     @CrossOrigin(origins = "http://localhost:5173")

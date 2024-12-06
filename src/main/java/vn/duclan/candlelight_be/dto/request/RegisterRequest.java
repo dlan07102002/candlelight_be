@@ -12,7 +12,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import vn.duclan.candlelight_be.model.Gender;
+import vn.duclan.candlelight_be.model.enums.Gender;
 import vn.duclan.validator.PasswordConstraints;
 
 @Data

@@ -9,10 +9,12 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -41,12 +43,19 @@ public class OrderDetail {
     @Transient // Trường này sẽ không được lưu trong cơ sở dữ liệu
     int productId;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST, CascadeType.MERGE,
-                CascadeType.DETACH, CascadeType.REFRESH
-            })
+    @Transient
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    int orderId;
+
+    @Transient
+    // Can send from client but not seen in response
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    int userId;
+
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {
+            CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH
+    })
     @JoinColumn(name = "product_id", nullable = false)
     // JsonIgnore annotation is used to serialize or deserialize specific attribute
     // when obj convert to Json and vice versa
@@ -54,19 +63,19 @@ public class OrderDetail {
     @JsonIgnore
     Product product;
 
-    @Transient
-    int orderId;
-
-    @Transient
-    int userId;
-
-    @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST, CascadeType.MERGE,
-                CascadeType.DETACH, CascadeType.REFRESH
-            })
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {
+            CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH
+    })
     @JsonIgnore
     @JoinColumn(name = "order_id", nullable = false)
     Order order;
+
+    @PostLoad
+    private void assignProductId() {
+        if (product != null) {
+            this.productId = product.getProductId();
+        }
+    }
+
 }

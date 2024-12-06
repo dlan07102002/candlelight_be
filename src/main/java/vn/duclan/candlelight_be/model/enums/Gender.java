@@ -1,4 +1,4 @@
-package vn.duclan.candlelight_be.model;
+package vn.duclan.candlelight_be.model.enums;
 
 public enum Gender {
     MALE,
