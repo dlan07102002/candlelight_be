@@ -36,7 +36,6 @@ public class OrderDetailService {
     }
 
     public ResponseEntity<String> save(OrderDetail orderDetail) {
-        System.out.println("-----------------------" + orderDetail);
         Product product = productRepository.findById(orderDetail.getProductId()).get();
         User user = userRepository.findById(orderDetail.getUserId()).get(); // Assuming you meant getUserId()
         Order order = orderRepository.findById(orderDetail.getOrderId()).get();
@@ -66,6 +65,6 @@ public class OrderDetailService {
         orderDetailRepository.save(orderDetail);
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body("OrderDetail saved successfully with ID: " + orderDetail.getOrderDetailId());
+                .body(orderDetail.getOrderDetailId() + "");
     }
 }

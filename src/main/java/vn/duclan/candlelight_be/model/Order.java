@@ -3,6 +3,9 @@ package vn.duclan.candlelight_be.model;
 import java.sql.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,6 +18,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 
@@ -76,13 +80,22 @@ public class Order {
         PaymentStatus paymentStatus;
 
         @Transient
+        // Can send from client but not seen in response
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         int userId;
+
+        @Transient
+        int paymentMethodId;
+
+        @Transient
+        int deliveryMethodId;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "user_id", nullable = false)
+        @JsonIgnore
         User user;
 
         @OneToMany(mappedBy = "order", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -93,6 +106,7 @@ public class Order {
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "delivery_method_id")
+        @JsonIgnore
         DeliveryMethod deliveryMethod;
 
         @ManyToOne(fetch = FetchType.LAZY, cascade = {
@@ -100,5 +114,20 @@ public class Order {
                         CascadeType.DETACH, CascadeType.REFRESH
         })
         @JoinColumn(name = "payment_method_id")
+        @JsonIgnore
         PaymentMethod paymentMethod;
+
+        @PostLoad
+        private void assignId() {
+                if (user != null) {
+                        this.userId = user.getUserId();
+                }
+                if (paymentMethod != null) {
+                        this.paymentMethodId = paymentMethod.getPaymentMethodId();
+                }
+                if (deliveryMethod != null) {
+                        this.deliveryMethodId = deliveryMethod.getDeliveryMethodId();
+                }
+        }
+
 }

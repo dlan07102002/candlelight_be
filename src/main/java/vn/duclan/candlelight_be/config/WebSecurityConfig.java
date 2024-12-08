@@ -42,10 +42,7 @@ public class WebSecurityConfig {
 
     @Bean
     @Autowired
-    @ConditionalOnProperty(
-            prefix = "spring",
-            value = "datasource.driverClassName",
-            havingValue = "com.mysql.cj.jdbc.Driver")
+    @ConditionalOnProperty(prefix = "spring", value = "datasource.driverClassName", havingValue = "com.mysql.cj.jdbc.Driver")
     public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider dap = new DaoAuthenticationProvider();
         dap.setUserDetailsService(userService);
@@ -67,10 +64,17 @@ public class WebSecurityConfig {
                 // saved as ROLE_ADMIN. hasAuthority does not auto add prefix ROLE
                 .requestMatchers(HttpMethod.POST, Endpoints.PUBLIC_POST_ENDPOINTS)
                 .permitAll()
+
+                .requestMatchers(HttpMethod.GET, Endpoints.USER_GET_ENDPOINTS)
+                .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.POST, Endpoints.USER_POST_ENDPOINTS)
+                .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
                 .requestMatchers(HttpMethod.PATCH, Endpoints.USER_PATCH_ENDPOINTS)
                 .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
                 .requestMatchers(HttpMethod.DELETE, Endpoints.USER_DELETE_ENDPOINTS)
                 .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
+
+                // Admin-only
                 .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS)
                 .hasAuthority(ROLE_ADMIN)
                 .requestMatchers(HttpMethod.POST, Endpoints.ADMIN_POST_ENDPOINTS)

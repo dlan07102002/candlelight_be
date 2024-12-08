@@ -66,10 +66,6 @@ public class User {
         @Column(name = "activate_code")
         String activateCode;
 
-        // @Column(name = "avatar", columnDefinition = "LONGBLOB")
-        // @Lob
-        // String avatar;
-
         @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
