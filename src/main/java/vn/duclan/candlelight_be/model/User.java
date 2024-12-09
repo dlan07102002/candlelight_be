@@ -3,6 +3,8 @@ package vn.duclan.candlelight_be.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 
@@ -40,6 +42,7 @@ public class User {
         String username;
 
         @Column(name = "password")
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String password;
 
         @Enumerated(EnumType.STRING)
@@ -64,12 +67,10 @@ public class User {
         Boolean isActivate;
 
         @Column(name = "activate_code")
+        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
         String activateCode;
 
-        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = {
-                        CascadeType.PERSIST, CascadeType.MERGE,
-                        CascadeType.DETACH, CascadeType.REFRESH
-        })
+        @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
         @Builder.Default
         List<Review> reviewList = new ArrayList<>();
 

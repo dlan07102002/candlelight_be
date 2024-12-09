@@ -94,7 +94,7 @@ public class Order {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
         })
-        @JoinColumn(name = "user_id", nullable = false)
+        @JoinColumn(name = "user_id", nullable = true)
         @JsonIgnore
         User user;
 

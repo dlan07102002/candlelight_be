@@ -73,6 +73,8 @@ public class WebSecurityConfig {
                 .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
                 .requestMatchers(HttpMethod.DELETE, Endpoints.USER_DELETE_ENDPOINTS)
                 .hasAnyAuthority(ROLE_USER, ROLE_STAFF, ROLE_ADMIN)
+                .requestMatchers(HttpMethod.DELETE, Endpoints.ADMIN_DELETE_ENDPOINTS)
+                .hasAnyAuthority(ROLE_ADMIN)
 
                 // Admin-only
                 .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS)

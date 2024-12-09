@@ -35,21 +35,18 @@ public class Review {
     @Column(name = "comment", columnDefinition = "text")
     String comment;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST, CascadeType.MERGE,
-                CascadeType.DETACH, CascadeType.REFRESH
-            })
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {
+            CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH
+    })
     @JoinColumn(name = "product_id", nullable = false)
     Product product;
 
-    @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST, CascadeType.MERGE,
-                CascadeType.DETACH, CascadeType.REFRESH
-            })
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {
+
+            CascadeType.PERSIST, CascadeType.MERGE,
+            CascadeType.DETACH, CascadeType.REFRESH
+    })
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 }

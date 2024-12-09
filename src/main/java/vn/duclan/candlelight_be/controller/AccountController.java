@@ -3,12 +3,7 @@ package vn.duclan.candlelight_be.controller;
 import java.text.ParseException;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,28 +27,19 @@ import vn.duclan.candlelight_be.dto.response.IntrospectResponse;
 import vn.duclan.candlelight_be.dto.response.JwtResponse;
 import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.exception.AppException;
-import vn.duclan.candlelight_be.exception.ErrorCode;
-import vn.duclan.candlelight_be.model.User;
 import vn.duclan.candlelight_be.service.AccountService;
 import vn.duclan.candlelight_be.service.JwtService;
-import vn.duclan.candlelight_be.service.UserService;
 
 @RestController
 @RequestMapping("/account")
 public class AccountController {
     private AccountService accountService;
-    private AuthenticationManager authenticationManager;
-    private UserService userService;
     private JwtService jwtService;
 
     public AccountController(
             AccountService accountService,
-            AuthenticationManager authenticationManager,
-            UserService userService,
             JwtService jwtService) {
         this.accountService = accountService;
-        this.authenticationManager = authenticationManager;
-        this.userService = userService;
         this.jwtService = jwtService;
     }
 
@@ -75,17 +61,6 @@ public class AccountController {
         return response;
     }
 
-    // } catch (AppException e) {
-    // ErrorCode errorCode = e.getErrorCode();
-    // apiResponse.setCode(errorCode.getCode());
-    // apiResponse.setMessage(errorCode.getMessage());
-    // return ResponseEntity.status(HttpStatus.FORBIDDEN).body(apiResponse);
-    // } catch (AuthenticationException e) {
-    // System.out.println(e.getMessage());
-    // apiResponse.setCode(ErrorCode.UNAUTHENTICATION.getCode());
-    // apiResponse.setMessage(ErrorCode.UNAUTHENTICATION.getMessage());
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponse);
-    // }
     @PostMapping("/login")
     @CrossOrigin(origins = "http://localhost:5173")
     public ResponseEntity<APIResponse<String>> login(@RequestBody LoginRequest loginRequest) {
