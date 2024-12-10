@@ -13,6 +13,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.Constraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -25,26 +27,20 @@ import lombok.experimental.FieldDefaults;
 @Table(name = "categories")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Category {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "category_id")
-    int categoryId;
+        @Id
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        @Column(name = "category_id")
+        int categoryId;
 
-    @Column(name = "category_name", length = 256)
-    String categoryName;
+        @Column(name = "category_name", length = 256)
+        String categoryName;
 
-    @ManyToMany(
-            fetch = FetchType.LAZY,
-            cascade = {
-                CascadeType.PERSIST, CascadeType.MERGE,
-                CascadeType.DETACH, CascadeType.REFRESH
-            })
-    // FK of product_category point to Product entity by @JoinColumn(name =
-    // "product_id")
-    @JoinTable(
-            name = "product_category",
-            joinColumns = @JoinColumn(name = "category_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id"))
-    @JsonIgnore
-    List<Product> productList;
+        @ManyToMany(fetch = FetchType.LAZY, cascade = {
+                        CascadeType.PERSIST, CascadeType.MERGE,
+                        CascadeType.DETACH, CascadeType.REFRESH
+        }, mappedBy = "categoryList")
+
+        @JsonIgnore
+        List<Product> productList;
+
 }

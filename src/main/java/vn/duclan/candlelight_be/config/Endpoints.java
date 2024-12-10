@@ -70,7 +70,11 @@ public class Endpoints {
                         "/order-details/**",
         };
 
+        public static final String[] ADMIN_PATCH_ENDPOINTS = {
+                        "/products", "/products/**"
+        };
+
         public static final String[] ADMIN_DELETE_ENDPOINTS = {
-                        "/", "/users", "/users/**", "/roles", "/roles/**"
+                        "/", "/users", "/users/**", "/roles", "/roles/**", "/products/**"
         };
 }

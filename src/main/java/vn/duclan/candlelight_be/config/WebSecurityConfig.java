@@ -80,6 +80,8 @@ public class WebSecurityConfig {
                 .requestMatchers(HttpMethod.GET, Endpoints.ADMIN_GET_ENDPOINTS)
                 .hasAuthority(ROLE_ADMIN)
                 .requestMatchers(HttpMethod.POST, Endpoints.ADMIN_POST_ENDPOINTS)
+                .hasAuthority(ROLE_ADMIN)
+                .requestMatchers(HttpMethod.PATCH, Endpoints.ADMIN_PATCH_ENDPOINTS)
                 .hasAuthority(ROLE_ADMIN));
 
         http.httpBasic(Customizer.withDefaults());
