@@ -11,6 +11,7 @@ public class Endpoints {
                         "/categories",
                         "/categories/**",
                         "/reviews",
+                        "/api/order",
                         "/orders",
                         "/orders/**",
                         "/order-details",
@@ -75,6 +76,7 @@ public class Endpoints {
         };
 
         public static final String[] ADMIN_DELETE_ENDPOINTS = {
-                        "/", "/users", "/users/**", "/roles", "/roles/**", "/products/**"
+                        "/", "/users", "/users/**", "/roles", "/roles/**", "/products/**", "/categories/**",
+                        "/api/category/**"
         };
 }

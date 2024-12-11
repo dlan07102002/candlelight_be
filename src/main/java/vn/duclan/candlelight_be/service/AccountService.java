@@ -150,7 +150,7 @@ public class AccountService {
     public ResponseEntity<?> activate(String email, String activateCode) {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("Email not found"));
         if (user == null) {
-            return ResponseEntity.badRequest().body("User is exists");
+            return ResponseEntity.badRequest().body("User is not exists");
         }
 
         if (user.getIsActivate().booleanValue()) {

@@ -2,6 +2,7 @@ package vn.duclan.candlelight_be.controller.custom;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -21,6 +22,12 @@ public class OrderController {
 
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
+    }
+
+    @GetMapping("")
+    @CrossOrigin(origins = "http://localhost:5173")
+    public Double calculateRevenue() {
+        return orderService.calculateRevenue();
     }
 
     @PostMapping("")

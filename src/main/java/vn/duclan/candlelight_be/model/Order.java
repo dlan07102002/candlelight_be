@@ -85,6 +85,10 @@ public class Order {
         int userId;
 
         @Transient
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        String username;
+
+        @Transient
         int paymentMethodId;
 
         @Transient
@@ -121,6 +125,7 @@ public class Order {
         private void assignId() {
                 if (user != null) {
                         this.userId = user.getUserId();
+                        this.username = user.getUsername();
                 }
                 if (paymentMethod != null) {
                         this.paymentMethodId = paymentMethod.getPaymentMethodId();

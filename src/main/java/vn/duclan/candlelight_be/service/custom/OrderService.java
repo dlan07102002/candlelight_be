@@ -8,6 +8,7 @@ import vn.duclan.candlelight_be.model.DeliveryMethod;
 import vn.duclan.candlelight_be.model.Order;
 import vn.duclan.candlelight_be.model.PaymentMethod;
 import vn.duclan.candlelight_be.model.User;
+import vn.duclan.candlelight_be.model.enums.PaymentStatus;
 import vn.duclan.candlelight_be.repository.DeliveryMethodRepository;
 import vn.duclan.candlelight_be.repository.OrderRepository;
 import vn.duclan.candlelight_be.repository.PaymentMethodRepository;
@@ -64,6 +65,11 @@ public class OrderService {
                 .orElseThrow(() -> {
                     return new AppException(ErrorCode.UNAUTHENTICATION);
                 });
+    }
+
+    public Double calculateRevenue() {
+        // Must chage to SUCCESS, Pending here to test
+        return orderRepository.calculateRevenue(PaymentStatus.PENDING);
     }
 
 }

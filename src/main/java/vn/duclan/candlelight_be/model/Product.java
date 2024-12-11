@@ -2,8 +2,6 @@ package vn.duclan.candlelight_be.model;
 
 import java.util.List;
 
-import org.hibernate.annotations.Cascade;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -15,7 +13,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.PreRemove;
 import jakarta.persistence.Table;
 
 import lombok.AccessLevel;
@@ -57,12 +54,6 @@ public class Product {
         @Column(name = "rate_average")
         Double rateAverage;
 
-        // @Column(name = "brand")
-        // String brand;
-
-        // @Column(name = "weight")
-        // double weight;
-
         @ManyToMany(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
@@ -82,9 +73,7 @@ public class Product {
         })
         List<OrderDetail> orderDetailList;
 
-        @ManyToMany(
-
-                        mappedBy = "productList")
+        @ManyToMany(mappedBy = "productList")
 
         List<Wishlist> wishlists;
 }

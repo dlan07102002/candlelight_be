@@ -12,11 +12,14 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.Constraint;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.AccessLevel;
 import lombok.Data;
@@ -35,6 +38,10 @@ public class Category {
         @Column(name = "category_name", length = 256)
         String categoryName;
 
+        @Transient
+        @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+        int quantity;
+
         @ManyToMany(fetch = FetchType.LAZY, cascade = {
                         CascadeType.PERSIST, CascadeType.MERGE,
                         CascadeType.DETACH, CascadeType.REFRESH
@@ -42,5 +49,12 @@ public class Category {
 
         @JsonIgnore
         List<Product> productList;
+
+        @PostLoad
+        void assignQuantity() {
+                if (productList != null) {
+                        this.quantity = productList.size();
+                }
+        }
 
 }
