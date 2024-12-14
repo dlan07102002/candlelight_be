@@ -122,7 +122,7 @@ public class Order {
         PaymentMethod paymentMethod;
 
         @PostLoad
-        private void assignId() {
+        void assignId() {
                 if (user != null) {
                         this.userId = user.getUserId();
                         this.username = user.getUsername();

@@ -62,6 +62,9 @@ public class User {
         @Column(name = "delivery_address")
         String deliveryAddress;
 
+        @Transient
+        int reviewCnt;
+
         // Boolean chấp nhận giá trị null
         @Column(name = "is_activate", columnDefinition = "BOOLEAN")
         Boolean isActivate;
@@ -95,4 +98,12 @@ public class User {
         @JoinTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
         @Builder.Default
         List<Role> roleList = new ArrayList<>();
+
+        @PostLoad
+        void assignReviewCnt() {
+                if (this.reviewList != null) {
+                        this.reviewCnt = reviewList.size();
+                } else
+                        this.reviewCnt = 0;
+        }
 }

@@ -63,8 +63,8 @@ public class JwtService {
     public String generateToken(String username) {
 
         Map<String, Object> claims = new HashMap<>();
-        User user =
-                userRepository.findByUsername(username).orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATION));
         List<Role> roleList = user.getRoleList();
         boolean isAdmin = false;
         boolean isStaff = false;
@@ -86,6 +86,7 @@ public class JwtService {
         claims.put("isAdmin", isAdmin);
         claims.put("isStaff", isStaff);
         claims.put("isUser", isUser);
+        claims.put("rvCnt", user.getReviewCnt());
         claims.put("uid", user.getUserId());
 
         return createToken(claims, username);
@@ -94,8 +95,7 @@ public class JwtService {
     // Tạo JWT với các claim đã chọn
     private String createToken(Map<String, Object> claims, String username) {
         Date currentDate = new Date();
-        Date expirationDate =
-                new Date(Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli());
+        Date expirationDate = new Date(Instant.now().plus(validDuration, ChronoUnit.SECONDS).toEpochMilli());
 
         // When call builder() and provide claims, JJWT auto convert claims map to
         // payload
@@ -181,11 +181,11 @@ public class JwtService {
 
     // validation Token
     public Boolean validateToken(String token, UserDetails userDetails, boolean isRefresh) throws JwtException {
-        if (token == null) return false;
+        if (token == null)
+            return false;
         final String username = getUsername(token);
         // Kiểm tra tính hợp lệ của token
-        IntrospectResponse introspectResponse =
-                introspect(IntrospectRequest.builder().token(token).build());
+        IntrospectResponse introspectResponse = introspect(IntrospectRequest.builder().token(token).build());
         log.info("SECRET KEY: {} ", secretKey);
         if (!introspectResponse.isValid()) {
             throw new JwtException("Token invalid");

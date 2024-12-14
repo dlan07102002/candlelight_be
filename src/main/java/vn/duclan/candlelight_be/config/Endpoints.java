@@ -2,6 +2,7 @@ package vn.duclan.candlelight_be.config;
 
 // Endpoint management
 public class Endpoints {
+
         public static final String FE_HOST = "http://localhost:5173";
         public static final String[] PUBLIC_GET_ENDPOINTS = {
                         "/products",
@@ -20,7 +21,8 @@ public class Endpoints {
                         "/users/search/existsByUsername",
                         "/users/search/existsByEmail",
                         "/account/activate",
-                        "/users/**"
+                        "/users/**",
+                        "/reviews/**"
         };
 
         public static final String[] PUBLIC_POST_ENDPOINTS = {
@@ -42,6 +44,8 @@ public class Endpoints {
 
         public static final String[] USER_POST_ENDPOINTS = {
                         "/api/order", "/api/orders/**",
+                        "/api/review"
+
         };
 
         public static final String[] USER_PATCH_ENDPOINTS = {
