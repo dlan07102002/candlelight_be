@@ -17,21 +17,24 @@ import vn.duclan.candlelight_be.model.User;
 public interface UserMapper {
 
     // Ánh xạ ngược từ RegisterRequest sang User
-    @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "reviewList", ignore = true) // Không ánh xạ reviewList
-    @Mapping(target = "wishlists", ignore = true) // Không ánh xạ wishlists
-    @Mapping(target = "orderList", ignore = true) // Không ánh xạ orderList
-    @Mapping(target = "roleList", ignore = true) // Không ánh xạ roleList
+    @Mapping(target = "userId", ignore = true) // skip userId field
+    @Mapping(target = "reviewList", ignore = true)
+    @Mapping(target = "wishlists", ignore = true)
+    @Mapping(target = "orderList", ignore = true)
+    @Mapping(target = "roleList", ignore = true)
+    @Mapping(target = "reviewCnt", ignore = true)
     User toUser(RegisterRequest request);
 
     UserResponse toUserResponse(User user);
 
     // Update field not null
     @Mapping(target = "userId", ignore = true)
-    @Mapping(target = "reviewList", ignore = true) // Không ánh xạ reviewList
-    @Mapping(target = "wishlists", ignore = true) // Không ánh xạ wishlists
-    @Mapping(target = "orderList", ignore = true) // Không ánh xạ orderList
+    @Mapping(target = "reviewList", ignore = true)
+    @Mapping(target = "wishlists", ignore = true)
+    @Mapping(target = "orderList", ignore = true)
     @Mapping(target = "roleList", ignore = true)
+    @Mapping(target = "reviewCnt", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+
     void updateUser(@MappingTarget User user, UpdateInfoRequest request);
 }

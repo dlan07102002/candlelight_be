@@ -35,24 +35,9 @@ public class GlobalExceptionHandler {
 
         List<ValidationError> errors = exception.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> {
-                    // Get args that pass into Constraint
-                    // ConstraintViolation: An Object in java stand for the violation when
-                    // validation
 
-                    /* unwrap(ConstraintViolation.class) chuyển đổi lỗi trường thành đối tượng */
-                    /*
-                     * ConstraintViolation.
-                     * getConstraintDescriptor().getAttributes() lấy các thuộc tính mô tả chi tiết
-                     * về ràng buộc, ví dụ như giá trị của ràng buộc @Min, @Size, v.v.
-                     */
-                    /*
-                     * getAttributes() trả về một Map<String, Object>, trong đó:
-                     * Key: là tên của thuộc tính trong annotation (ví dụ: "min" đối với @Min(10)).
-                     * Value: là giá trị mà thuộc tính này nhận được (ví dụ: 10 đối với @Min(10)).
-                     */
                     var constraintViolation = fieldError.unwrap(ConstraintViolation.class);
-                    Map<String, Object> attributes =
-                            constraintViolation.getConstraintDescriptor().getAttributes();
+                    Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
 
                     return ValidationError.builder()
                             .field(fieldError.getField())

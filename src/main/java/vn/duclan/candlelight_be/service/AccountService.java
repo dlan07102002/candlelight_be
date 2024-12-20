@@ -8,6 +8,7 @@ import java.util.UUID;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
 import vn.duclan.candlelight_be.dto.request.LogoutRequest;
 import vn.duclan.candlelight_be.dto.request.RegisterRequest;
 import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
+import vn.duclan.candlelight_be.dto.response.JwtResponse;
 import vn.duclan.candlelight_be.dto.response.UserResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
@@ -40,6 +43,33 @@ import vn.duclan.candlelight_be.repository.UserRepository;
 @Service
 @Slf4j
 public class AccountService {
+    @NonFinal
+    @Value("${outbound.identity.google.client-id}")
+    protected String GG_CLIENT_ID;
+
+    @NonFinal
+    @Value("${outbound.identity.google.client-secret}")
+    protected String GG_CLIENT_SECRET;
+
+    @NonFinal
+    @Value("${outbound.identity.google.redirect-uri}")
+    protected String GG_REDIRECT_URI;
+
+    @NonFinal
+    @Value("${outbound.identity.github.client-id}")
+    protected String GH_CLIENT_ID;
+
+    @NonFinal
+    @Value("${outbound.identity.github.client-secret}")
+    protected String GH_CLIENT_SECRET;
+
+    @NonFinal
+    @Value("${outbound.identity.github.redirect-uri}")
+    protected String GH_REDIRECT_URI;
+
+    @NonFinal
+    protected final String GRANT_TYPE = "authorization_code";
+
     private EmailService emailService;
     private UserRepository userRepository;
     private RoleRepository roleRepository;
@@ -48,6 +78,8 @@ public class AccountService {
     private JwtService jwtService;
     private InvalidatedTokenRepository invalidatedTokenRepository;
     private AuthenticationManager authenticationManager;
+    private GithubService githubService;
+    private GoogleService googleService;
 
     public AccountService(
             UserRepository userRepository,
@@ -57,7 +89,8 @@ public class AccountService {
             RoleRepository roleRepository,
             JwtService jwtService,
             InvalidatedTokenRepository invalidatedTokenRepository,
-            AuthenticationManager authenticationManager) {
+            AuthenticationManager authenticationManager, GithubService githubService,
+            GoogleService googleService) {
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
@@ -66,6 +99,8 @@ public class AccountService {
         this.jwtService = jwtService;
         this.invalidatedTokenRepository = invalidatedTokenRepository;
         this.authenticationManager = authenticationManager;
+        this.githubService = githubService;
+        this.googleService = googleService;
 
     }
 
@@ -80,12 +115,9 @@ public class AccountService {
 
         // Insert user into DB
         User user = userMapper.toUser(request);
-        Role userRole = new Role();
 
-        userRole.setRoleName("USER");
         List<Role> roleList = new ArrayList<>();
         roleList.add(roleRepository.findByRoleName("USER"));
-
         user.setRoleList(roleList);
         try {
             userRepository.save(user);
@@ -94,7 +126,7 @@ public class AccountService {
         }
 
         // send email to User for activation account
-        sendActiveEmail(request.getEmail(), request.getActivateCode());
+        sendActivateEmail(request.getEmail(), request.getActivateCode());
 
         return userMapper.toUserResponse(user);
     }
@@ -227,7 +259,7 @@ public class AccountService {
         return UUID.randomUUID().toString();
     }
 
-    public void sendActiveEmail(String email, String activateCode) {
+    public void sendActivateEmail(String email, String activateCode) {
         String url = "http://localhost:5173/activate/" + email + "/" + activateCode;
         String subject = "Complete Your Registration: Activate Your Candlelight.com Account";
 
@@ -262,5 +294,32 @@ public class AccountService {
                 + "</html>";
 
         emailService.sendEmail("s.gintoki710@gmail.com", email, subject, content);
+    }
+
+    public JwtResponse outboundAuthenticate(String code, String type) {
+        if (type.equals("github")) {
+            var response = githubService.exchangeToken(GH_CLIENT_ID,
+                    GH_CLIENT_SECRET,
+                    code,
+                    GH_REDIRECT_URI);
+            log.info(response.getAccessToken());
+            var userInfo = githubService.getUserInfo(response.getAccessToken());
+            String jwtToken = jwtService.generateToken(userInfo.getLogin());
+
+            return JwtResponse.builder().jwt(jwtToken).build();
+
+        } else {
+            var response = googleService.exchangeToken(GG_CLIENT_ID, GG_CLIENT_SECRET, code, GG_REDIRECT_URI);
+            if (response == null || response.getAccessToken() == null) {
+                throw new AppException(ErrorCode.UNAUTHENTICATION);
+            }
+            var userInfo = googleService.getUserInfo(response.getAccessToken());
+            if (userInfo == null || userInfo.getEmail() == null) {
+                throw new AppException(ErrorCode.UNAUTHENTICATION);
+            }
+            String jwtToken = jwtService.generateToken(userInfo.getEmail());
+            return JwtResponse.builder().jwt(jwtToken).build();
+        }
+
     }
 }

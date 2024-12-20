@@ -115,4 +115,18 @@ public class AccountController {
         var result = jwtService.introspect(request);
         return APIResponse.<IntrospectResponse>builder().result(result).build();
     }
+
+    @PostMapping("/outbound/authentication")
+    public APIResponse<JwtResponse> outboundAuthenticate(@RequestParam("code") String code,
+            @RequestParam("type") String type) {
+        // if (type.equals("github")) {
+        // var result = accountService.githubAuthenticate(code);
+        // return APIResponse.<JwtResponse>builder().result(result).build();
+        // } else {
+        // var result = accountService.googleAuthenticate(code);
+        // return APIResponse.<JwtResponse>builder().result(result).build();
+        // }
+        var result = accountService.outboundAuthenticate(code, type);
+        return APIResponse.<JwtResponse>builder().result(result).build();
+    }
 }

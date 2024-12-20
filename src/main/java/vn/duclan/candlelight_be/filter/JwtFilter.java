@@ -42,8 +42,8 @@ public class JwtFilter extends OncePerRequestFilter {
         UserDetails userDetails = userService.loadUserByUsername(username);
         if (userDetails != null && jwtService.validateToken(token, userDetails, false)) {
             // Tạo đối tượng Authentication nếu token hợp lệ
-            UsernamePasswordAuthenticationToken authToken =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null,
+                    userDetails.getAuthorities());
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken); // Lưu thông tin xác thực vào
             // SecurityContext

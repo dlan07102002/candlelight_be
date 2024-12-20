@@ -12,6 +12,7 @@ public class Endpoints {
                         "/categories",
                         "/categories/**",
                         "/reviews",
+                        "/reviews/**",
                         "/api/order",
                         "/orders",
                         "/orders/**",
@@ -21,8 +22,8 @@ public class Endpoints {
                         "/users/search/existsByUsername",
                         "/users/search/existsByEmail",
                         "/account/activate",
-                        "/users/**",
-                        "/reviews/**"
+                        "/users/**"
+
         };
 
         public static final String[] PUBLIC_POST_ENDPOINTS = {
@@ -35,6 +36,8 @@ public class Endpoints {
                         "/api/order-detail/**",
                         "/images",
                         "/images/**",
+                        "/account/outbound/authentication",
+                        "/account/outbound/authentication/**"
 
         };
 
@@ -43,7 +46,7 @@ public class Endpoints {
         };
 
         public static final String[] USER_POST_ENDPOINTS = {
-                        "/api/order", "/api/orders/**",
+                        "/api/order", "/api/order/**",
                         "/api/review"
 
         };

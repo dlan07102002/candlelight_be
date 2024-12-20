@@ -8,7 +8,6 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import vn.duclan.candlelight_be.model.Product;
-import vn.duclan.candlelight_be.model.Review;
 
 @RepositoryRestResource(path = "products")
 public interface ProductRepository extends JpaRepository<Product, Integer> {

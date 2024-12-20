@@ -1,5 +1,7 @@
 HELP.md
 target/
+resources/
+resources/application.properties
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -35,3 +37,4 @@ build/
 # resource
 .properties
 .yaml
+
