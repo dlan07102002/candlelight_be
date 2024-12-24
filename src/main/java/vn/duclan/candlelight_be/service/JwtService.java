@@ -186,7 +186,6 @@ public class JwtService {
         final String username = getUsername(token);
         // Kiểm tra tính hợp lệ của token
         IntrospectResponse introspectResponse = introspect(IntrospectRequest.builder().token(token).build());
-        log.info("SECRET KEY: {} ", secretKey);
         if (!introspectResponse.isValid()) {
             throw new JwtException("Token invalid");
         }

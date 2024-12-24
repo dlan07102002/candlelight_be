@@ -55,14 +55,15 @@ public class OrderDetailService {
                     .body("Order not found with id: " + orderDetail.getOrderId());
         }
 
-        order.setUser(user); // Nếu `order.setUser()` cần thiết
-        orderRepository.saveAndFlush(order);
-
         orderDetail.setProduct(product);
 
         orderDetail.setOrder(order);
 
         orderDetailRepository.save(orderDetail);
+
+        order.setUser(user); // Nếu `order.setUser()` cần thiết
+        order.calculateTotalPrice();
+        orderRepository.saveAndFlush(order);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(orderDetail.getOrderDetailId() + "");

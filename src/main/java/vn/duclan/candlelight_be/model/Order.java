@@ -40,7 +40,7 @@ public class Order {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "order_id")
-        int orderId;
+        long orderId;
 
         @Column(name = "created_at")
         Date createdAt;
@@ -58,7 +58,7 @@ public class Order {
         double paymentCost;
 
         @Column(name = "total_price")
-        double totalPrice;
+        double totalPrice = 0;
 
         /*
          * PENDING: Đơn hàng chưa được xử lý.
@@ -132,6 +132,16 @@ public class Order {
                 }
                 if (deliveryMethod != null) {
                         this.deliveryMethodId = deliveryMethod.getDeliveryMethodId();
+                }
+        }
+
+        public void calculateTotalPrice() {
+                if (this.orderDetailList != null && !this.orderDetailList.isEmpty()) {
+                        this.totalPrice = this.orderDetailList.stream()
+                                        .mapToDouble(detail -> detail.getSellPrice() * detail.getQuantity())
+                                        .sum();
+                } else {
+                        this.totalPrice = 0;
                 }
         }
 

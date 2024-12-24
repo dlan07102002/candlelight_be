@@ -2,8 +2,11 @@ package vn.duclan.candlelight_be.config;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.metamodel.Type;
+import vn.duclan.candlelight_be.config.event_handler.OrderDetailEventHandler;
 
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
 import org.springframework.data.rest.core.config.RepositoryRestConfiguration;
 import org.springframework.data.rest.webmvc.config.RepositoryRestConfigurer;
 import org.springframework.http.HttpMethod;
@@ -41,4 +44,10 @@ public class RestConfiguration implements RepositoryRestConfigurer {
                 .withItemExposure((metadata, httpMethods) -> httpMethods.disable(methods))
                 .withCollectionExposure((metadata, httpMethods) -> httpMethods.disable(methods));
     }
+
+    @Bean
+    OrderDetailEventHandler orderDetailEventHandler() {
+        return new OrderDetailEventHandler();
+    }
+
 }

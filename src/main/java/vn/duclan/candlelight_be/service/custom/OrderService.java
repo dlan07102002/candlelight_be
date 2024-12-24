@@ -2,6 +2,7 @@ package vn.duclan.candlelight_be.service.custom;
 
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
+import vn.duclan.candlelight_be.dto.request.OrderStatusRequest;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.DeliveryMethod;
@@ -35,7 +36,7 @@ public class OrderService {
         this.jwtService = jwtService;
     }
 
-    public int save(Order order, String token) {
+    public long save(Order order, String token) {
         log.info("Saving order for user ID: {}", order.getUserId());
         String username = jwtService.getUsername(token);
         User user = isUserValid(username);
@@ -58,6 +59,25 @@ public class OrderService {
         Order savedOrder = orderRepository.save(order);
 
         return savedOrder.getOrderId();
+    }
+
+    public long update(OrderStatusRequest request, String token) {
+        log.info("Updating order...");
+        String username = jwtService.getUsername(token);
+        User user = isUserValid(username);
+        Order order = orderRepository.findById(request.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order is not exist"));
+        // Update delivery status
+        if (request.getDeliveryStatus() != null) {
+            order.setDeliveryStatus(request.getDeliveryStatus());
+        }
+        if (request.getPaymentStatus() != null) {
+            order.setPaymentStatus(request.getPaymentStatus());
+        }
+
+        orderRepository.saveAndFlush(order);
+
+        return order.getOrderId();
     }
 
     private User isUserValid(String username) {

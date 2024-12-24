@@ -79,7 +79,7 @@ public class Endpoints {
         };
 
         public static final String[] ADMIN_PATCH_ENDPOINTS = {
-                        "/products", "/products/**"
+                        "/products", "/products/**", "/orders/**", "/api/order/**"
         };
 
         public static final String[] ADMIN_DELETE_ENDPOINTS = {

@@ -12,7 +12,7 @@ import vn.duclan.candlelight_be.model.Order;
 import vn.duclan.candlelight_be.model.enums.PaymentStatus;
 
 @RepositoryRestResource(path = "orders")
-public interface OrderRepository extends JpaRepository<Order, Integer> {
+public interface OrderRepository extends JpaRepository<Order, Long> {
     // Get latest Order By User
     Page<Order> findTopByUser_UserIdOrderByOrderIdDesc(@RequestParam("userId") int userId, Pageable pageable);
 
