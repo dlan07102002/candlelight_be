@@ -71,4 +71,22 @@ public class OrderController {
             return APIResponse.builder().code(ErrorCode.BAD_REQUEST.getCode()).build();
         }
     }
+
+    @PatchMapping("/pay")
+    APIResponse<?> pay(@RequestBody OrderStatusRequest request,
+            @RequestHeader("Authorization") String authorizationHeader) {
+        try {
+            String token = "";
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                token = authorizationHeader.substring(7);
+            }
+
+            return APIResponse.builder().result(orderService.pay(request, token)).build();
+
+        } catch (AppException e) {
+            // TODO: handle exception
+
+            return APIResponse.builder().code(ErrorCode.BAD_REQUEST.getCode()).build();
+        }
+    }
 }

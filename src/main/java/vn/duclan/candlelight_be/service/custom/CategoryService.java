@@ -3,6 +3,7 @@ package vn.duclan.candlelight_be.service.custom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.Category;
@@ -24,6 +25,7 @@ public class CategoryService {
         this.categoryRepository = categoryRepository;
     }
 
+    @Transactional
     public Category deleteCategoryById(int categoryId) {
         try {
             // Retrieve the category by ID
