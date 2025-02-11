@@ -9,12 +9,14 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.model.Review;
 import vn.duclan.candlelight_be.service.custom.ReviewService;
 
 @RestController
 @RequestMapping("/api/review")
+@Tag(name = "Review Controller")
 public class ReviewController {
 
     @Autowired

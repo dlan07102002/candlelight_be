@@ -23,7 +23,10 @@ public class Endpoints {
                         "/users/search/existsByEmail",
                         "/account/activate",
                         "/users/**",
-                        "/api/order/**"
+                        "/api/order/**",
+                        "/v3/**",
+                        "/swagger-ui.html/**",
+                        "/swagger-ui/**",
 
         };
 

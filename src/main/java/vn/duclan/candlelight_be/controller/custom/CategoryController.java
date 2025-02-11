@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
 import vn.duclan.candlelight_be.exception.ErrorCode;
@@ -14,6 +15,7 @@ import vn.duclan.candlelight_be.service.custom.CategoryService;
 @RestController
 @RequestMapping("/api/category")
 @Slf4j
+@Tag(name = "CategoryController")
 public class CategoryController {
     private CategoryService categoryService;
 

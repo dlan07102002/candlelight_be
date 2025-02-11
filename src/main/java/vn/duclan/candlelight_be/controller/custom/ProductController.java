@@ -8,12 +8,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import vn.duclan.candlelight_be.model.Image;
 import vn.duclan.candlelight_be.model.Product;
 import vn.duclan.candlelight_be.service.custom.ProductService;
 
 @RestController
 @RequestMapping("/admin/products")
+@Tag(name = "Product Controller")
 public class ProductController {
 
     private ProductService productService;

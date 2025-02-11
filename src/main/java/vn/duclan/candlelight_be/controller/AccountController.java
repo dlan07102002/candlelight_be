@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import vn.duclan.candlelight_be.dto.request.IntrospectRequest;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
 import vn.duclan.candlelight_be.dto.request.LogoutRequest;
@@ -32,6 +34,7 @@ import vn.duclan.candlelight_be.service.JwtService;
 
 @RestController
 @RequestMapping("/account")
+@Tag(name = "Account Controller")
 public class AccountController {
     private AccountService accountService;
     private JwtService jwtService;
@@ -45,6 +48,7 @@ public class AccountController {
 
     @CrossOrigin(origins = "${fe.host}")
     @PostMapping("/register")
+    @Operation(summary = "register - create user", description = "API create new user")
     public APIResponse<UserResponse> register(@Validated @RequestBody RegisterRequest request) {
         APIResponse<UserResponse> apiResponse = new APIResponse<>();
         apiResponse.setResult(accountService.register(request));

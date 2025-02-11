@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.dto.request.OrderRequest;
@@ -27,6 +28,7 @@ import vn.duclan.candlelight_be.util.RequestUtil;
 @RestController
 @RequestMapping("/api/order")
 @Slf4j
+@Tag(name = "Order Controller")
 public class OrderController {
     private OrderService orderService;
     private VNPayService payService;
