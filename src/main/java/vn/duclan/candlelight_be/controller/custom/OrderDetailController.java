@@ -20,7 +20,7 @@ public class OrderDetailController {
     }
 
     @PostMapping
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "${fe.host}")
     public ResponseEntity<?> addOderDetail(@RequestBody OrderDetail orderDetail) {
         ResponseEntity<?> response = orderDetailService.save(orderDetail);
         return response;

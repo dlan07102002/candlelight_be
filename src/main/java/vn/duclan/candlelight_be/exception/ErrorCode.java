@@ -20,7 +20,11 @@ public enum ErrorCode {
     // Authentication & Authorization Errors
     UNAUTHENTICATION(1005, "Invalid username or password", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1006, "You do not have permission to access this resource", HttpStatus.FORBIDDEN),
-    INVALID_TOKEN(1007, "Invalid token or token is expired", HttpStatus.UNAUTHORIZED);
+    INVALID_TOKEN(1007, "Invalid token or token is expired", HttpStatus.UNAUTHORIZED),
+
+    // Payment
+    ORDER_NOT_FOUND(1008, "Invalid order id", HttpStatus.BAD_REQUEST),
+    PAYMENT_ERROR(1009, "Invalid order id or vnpay is disconnected", HttpStatus.INTERNAL_SERVER_ERROR);
 
     // Thuộc tính
     private final int code;
@@ -33,4 +37,5 @@ public enum ErrorCode {
         this.message = message;
         this.statusCode = statusCode;
     }
+
 }

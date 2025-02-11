@@ -43,18 +43,15 @@ public class AccountController {
         this.jwtService = jwtService;
     }
 
-    @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
+    @CrossOrigin(origins = "${fe.host}")
     @PostMapping("/register")
     public APIResponse<UserResponse> register(@Validated @RequestBody RegisterRequest request) {
-
-        // ?: unbounded wildcard.
         APIResponse<UserResponse> apiResponse = new APIResponse<>();
         apiResponse.setResult(accountService.register(request));
-        // ResponseEntity<?> response =
         return apiResponse;
     }
 
-    @CrossOrigin(origins = "http://localhost:5173") // Allow request from FE(Port 5173)
+    @CrossOrigin(origins = "${fe.host}")
     @GetMapping("/activate")
     public ResponseEntity<?> activate(@RequestParam String email, @RequestParam String activateCode) {
         ResponseEntity<?> response = accountService.activate(email, activateCode);
@@ -62,7 +59,7 @@ public class AccountController {
     }
 
     @PostMapping("/login")
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "${fe.host}")
     public ResponseEntity<APIResponse<String>> login(@RequestBody LoginRequest loginRequest) {
         APIResponse<String> apiResponse = new APIResponse<>();
 
@@ -85,12 +82,12 @@ public class AccountController {
     }
 
     @PatchMapping("/update/{userId}")
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "${fe.host}")
     public ResponseEntity<APIResponse<UserResponse>> update(
             @RequestBody UpdateInfoRequest request,
             @PathVariable String userId,
             @RequestHeader("Authorization") String authorization) {
-        APIResponse<UserResponse> apiResponse = accountService.updateInfo(authorization, Integer.parseInt(userId),
+        APIResponse<UserResponse> apiResponse = accountService.updateInfo(authorization, Long.parseLong(userId),
                 request);
 
         if (apiResponse.getResult() != null)
@@ -100,7 +97,7 @@ public class AccountController {
     }
 
     @PostMapping("/refresh")
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "${fe.host}")
     public APIResponse<JwtResponse> refresh(@RequestBody RefreshRequest request) {
         APIResponse<JwtResponse> apiResponse = new APIResponse<>();
         JwtResponse jwtResponse = jwtService.refreshToken(request);
@@ -119,13 +116,6 @@ public class AccountController {
     @PostMapping("/outbound/authentication")
     public APIResponse<JwtResponse> outboundAuthenticate(@RequestParam("code") String code,
             @RequestParam("type") String type) {
-        // if (type.equals("github")) {
-        // var result = accountService.githubAuthenticate(code);
-        // return APIResponse.<JwtResponse>builder().result(result).build();
-        // } else {
-        // var result = accountService.googleAuthenticate(code);
-        // return APIResponse.<JwtResponse>builder().result(result).build();
-        // }
         var result = accountService.outboundAuthenticate(code, type);
         return APIResponse.<JwtResponse>builder().result(result).build();
     }

@@ -1,9 +1,11 @@
 package vn.duclan.candlelight_be.exception;
 
 import java.nio.file.AccessDeniedException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import jakarta.validation.ConstraintViolation;
 
@@ -32,12 +34,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<APIResponse<List<ValidationError>>> handleValidationException(
             MethodArgumentNotValidException exception) {
         // Get the error list
-
         List<ValidationError> errors = exception.getBindingResult().getFieldErrors().stream()
                 .map(fieldError -> {
+                    ConstraintViolation<?> constraintViolation = null;
 
-                    var constraintViolation = fieldError.unwrap(ConstraintViolation.class);
-                    Map<String, Object> attributes = constraintViolation.getConstraintDescriptor().getAttributes();
+                    try {
+                        constraintViolation = fieldError.unwrap(ConstraintViolation.class);
+
+                    } catch (ClassCastException e) {
+                        // TODO: handle exception
+                    }
+                    Map<String, Object> attributes = Optional.ofNullable(constraintViolation)
+                            .map(cv -> cv.getConstraintDescriptor().getAttributes())
+                            .orElse(Collections.emptyMap());
 
                     return ValidationError.builder()
                             .field(fieldError.getField())

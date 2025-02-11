@@ -7,6 +7,6 @@ import vn.duclan.candlelight_be.model.User;
 public interface UserService extends UserDetailsService {
     public User findByUsername(String username);
 
-    public User findById(int id);
+    public User findById(Long id);
 
 }

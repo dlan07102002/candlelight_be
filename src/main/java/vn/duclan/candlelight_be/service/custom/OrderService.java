@@ -1,54 +1,65 @@
 package vn.duclan.candlelight_be.service.custom;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import jakarta.transaction.Transactional;
+
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import vn.duclan.candlelight_be.dto.request.OrderStatusRequest;
+
+import vn.duclan.candlelight_be.dto.request.OrderRequest;
+import vn.duclan.candlelight_be.dto.response.OrderStatusResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.DeliveryMethod;
 import vn.duclan.candlelight_be.model.Order;
-import vn.duclan.candlelight_be.model.OrderDetail;
 import vn.duclan.candlelight_be.model.PaymentMethod;
-import vn.duclan.candlelight_be.model.Product;
 import vn.duclan.candlelight_be.model.User;
+import vn.duclan.candlelight_be.model.enums.DeliveryStatus;
 import vn.duclan.candlelight_be.model.enums.PaymentStatus;
 import vn.duclan.candlelight_be.repository.DeliveryMethodRepository;
 import vn.duclan.candlelight_be.repository.OrderRepository;
 import vn.duclan.candlelight_be.repository.PaymentMethodRepository;
-import vn.duclan.candlelight_be.repository.ProductRepository;
 import vn.duclan.candlelight_be.repository.UserRepository;
 import vn.duclan.candlelight_be.service.JwtService;
 
 @Service
 @Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class OrderService {
-    private OrderRepository orderRepository;
-    private UserRepository userRepository;
-    private ProductRepository productRepository;
-    private PaymentMethodRepository paymentMethodRepository;
-    private DeliveryMethodRepository deliveryMethodRepository;
-    private JwtService jwtService;
+    final OrderRepository orderRepository;
+    final UserRepository userRepository;
+    final PaymentMethodRepository paymentMethodRepository;
+    final DeliveryMethodRepository deliveryMethodRepository;
+    final JwtService jwtService;
 
-    public OrderService(OrderRepository orderRepository,
-            UserRepository userRepository,
-            PaymentMethodRepository paymentMethodRepository,
-            ProductRepository productRepository,
-            DeliveryMethodRepository deliveryMethodRepository, JwtService jwtService) {
-        this.orderRepository = orderRepository;
-        this.userRepository = userRepository;
-        this.paymentMethodRepository = paymentMethodRepository;
-        this.deliveryMethodRepository = deliveryMethodRepository;
-        this.productRepository = productRepository;
-        this.jwtService = jwtService;
-    }
+    @Value("${payment.vnpay.return-url}")
+    @NonFinal
+    String returnUrlFormat;
+
+    @Value("${payment.vnpay.init-payment-url}")
+    @NonFinal
+    String vnpayUrl;
+
+    @Value("${payment.vnpay.timeout}")
+    @NonFinal
+    long paymentTimeout;
+
+    @Value("${payment.vnpay.secret-key}")
+    @NonFinal
+    String secretKey;
+
+    @Value("${payment.vnpay.tmn-code}")
+    @NonFinal
+    String tmnCode;
 
     public long save(Order order, String token) {
-        log.info("Saving order for user ID: {}", order.getUserId());
+
         String username = jwtService.getUsername(token);
         User user = isUserValid(username);
         order.setUser(user);
@@ -67,16 +78,29 @@ public class OrderService {
             order.setDeliveryMethod(deliveryMethod);
         }
 
-        Order savedOrder = orderRepository.save(order);
+        Order latestOrder = new Order();
+        try {
+            latestOrder = orderRepository.findTopByUser_UserIdOrderByOrderIdDesc(user.getUserId())
+                    .orElseThrow(() -> new RuntimeException("Not found"));
 
-        return savedOrder.getOrderId();
+            if (!latestOrder.getDeliveryStatus().equals(DeliveryStatus.PENDING)) {
+                throw new RuntimeException("Order is completed");
+            }
+
+        } catch (Exception e) {
+            // TODO: handle exception
+
+            Order savedOrder = orderRepository.save(order);
+            return savedOrder.getOrderId();
+        }
+        return latestOrder.getOrderId();
     }
 
     @Transactional
-    public long update(OrderStatusRequest request, String token) {
+    public Long update(OrderRequest request) {
         log.info("Updating order...");
-        String username = jwtService.getUsername(token);
-        User user = isUserValid(username);
+        String username = jwtService.getUsername(request.getToken());
+        isUserValid(username);
         Order order = orderRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new RuntimeException("Order is not exist"));
         // Update delivery status
@@ -92,7 +116,7 @@ public class OrderService {
         return order.getOrderId();
     }
 
-    private User isUserValid(String username) {
+    User isUserValid(String username) {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> {
                     return new AppException(ErrorCode.UNAUTHENTICATION);
@@ -105,40 +129,28 @@ public class OrderService {
     }
 
     @Transactional
-    public Order pay(OrderStatusRequest request, String token) {
-        Order order = orderRepository.findById(request.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order with ID " + request.getOrderId() + " does not exist!"));
+    public void markPaid(Long orderId) {
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
 
-        List<OrderDetail> orderDetails = order.getOrderDetailList();
-
-        String username = jwtService.getUsername(token);
-        User userGetFromToken = isUserValid(username);
-        User userOrderOwner = isUserValid(order.getUsername());
-        if (userGetFromToken.getUserId() == userOrderOwner.getUserId()) {
-
-            List<Product> updatedProducts = new ArrayList<>();
-            for (OrderDetail od : orderDetails) {
-                Product product = productRepository.findById(od.getProductId())
-                        .orElseThrow(
-                                () -> new RuntimeException("Product with ID " + od.getProductId() + " is not valid"));
-
-                if (product.getQuantity() < od.getQuantity()) {
-                    throw new RuntimeException("Not enough stock for product ID: " + od.getProductId());
-                }
-
-                product.setQuantity(product.getQuantity() - od.getQuantity());
-                updatedProducts.add(product);
-            }
-
-            productRepository.saveAll(updatedProducts);
-
-            order.setTotalPrice(request.getTotalPrice());
             order.setPaymentStatus(PaymentStatus.SUCCESS);
+            order.setDeliveryStatus(DeliveryStatus.DELIVERED);
+            orderRepository.saveAndFlush(order);
 
-            return orderRepository.save(order);
-        } else {
-            throw new RuntimeException("User is not valid");
+        } catch (Exception e) {
+            // TODO: handle exception
+            log.info("Order payment failed: {}", e.getMessage());
+            throw new AppException(ErrorCode.PAYMENT_ERROR);
         }
 
     }
+
+    public OrderStatusResponse getOrderStatus(Long orderId) {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(ErrorCode.ORDER_NOT_FOUND));
+        return OrderStatusResponse.builder().orderId(orderId).userId(order.getUserId())
+                .deliveryStatus(order.getDeliveryStatus())
+                .paymentStatus(order.getPaymentStatus()).build();
+    }
+
 }

@@ -22,7 +22,8 @@ public class Endpoints {
                         "/users/search/existsByUsername",
                         "/users/search/existsByEmail",
                         "/account/activate",
-                        "/users/**"
+                        "/users/**",
+                        "/api/order/**"
 
         };
 
@@ -37,7 +38,7 @@ public class Endpoints {
                         "/images",
                         "/images/**",
                         "/account/outbound/authentication",
-                        "/account/outbound/authentication/**"
+                        "/account/outbound/authentication/**",
 
         };
 
@@ -47,7 +48,8 @@ public class Endpoints {
 
         public static final String[] USER_POST_ENDPOINTS = {
                         "/api/order", "/api/order/**",
-                        "/api/review"
+                        "/api/review",
+                        "/api/order/pay/vnpay"
 
         };
 

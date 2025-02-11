@@ -20,6 +20,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.dto.request.LoginRequest;
@@ -29,6 +32,7 @@ import vn.duclan.candlelight_be.dto.request.UpdateInfoRequest;
 import vn.duclan.candlelight_be.dto.response.APIResponse;
 import vn.duclan.candlelight_be.dto.response.JwtResponse;
 import vn.duclan.candlelight_be.dto.response.UserResponse;
+import vn.duclan.candlelight_be.dto.response.outbound.ExchangeTokenResponse;
 import vn.duclan.candlelight_be.exception.AppException;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.mapper.UserMapper;
@@ -42,67 +46,46 @@ import vn.duclan.candlelight_be.repository.UserRepository;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AccountService {
     @NonFinal
     @Value("${outbound.identity.google.client-id}")
-    protected String GG_CLIENT_ID;
+    String GG_CLIENT_ID;
 
     @NonFinal
     @Value("${outbound.identity.google.client-secret}")
-    protected String GG_CLIENT_SECRET;
+    String GG_CLIENT_SECRET;
 
     @NonFinal
     @Value("${outbound.identity.google.redirect-uri}")
-    protected String GG_REDIRECT_URI;
+    String GG_REDIRECT_URI;
 
     @NonFinal
     @Value("${outbound.identity.github.client-id}")
-    protected String GH_CLIENT_ID;
+    String GH_CLIENT_ID;
 
     @NonFinal
     @Value("${outbound.identity.github.client-secret}")
-    protected String GH_CLIENT_SECRET;
+    String GH_CLIENT_SECRET;
 
     @NonFinal
     @Value("${outbound.identity.github.redirect-uri}")
-    protected String GH_REDIRECT_URI;
+    String GH_REDIRECT_URI;
 
     @NonFinal
-    protected final String GRANT_TYPE = "authorization_code";
+    final String GRANT_TYPE = "authorization_code";
 
-    private EmailService emailService;
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private BCryptPasswordEncoder passwordEncoder;
-    private UserMapper userMapper;
-    private JwtService jwtService;
-    private InvalidatedTokenRepository invalidatedTokenRepository;
-    private AuthenticationManager authenticationManager;
-    private GithubService githubService;
-    private GoogleService googleService;
-
-    public AccountService(
-            UserRepository userRepository,
-            EmailService emailService,
-            BCryptPasswordEncoder passwordEncoder,
-            UserMapper userMapper,
-            RoleRepository roleRepository,
-            JwtService jwtService,
-            InvalidatedTokenRepository invalidatedTokenRepository,
-            AuthenticationManager authenticationManager, GithubService githubService,
-            GoogleService googleService) {
-        this.userRepository = userRepository;
-        this.emailService = emailService;
-        this.passwordEncoder = passwordEncoder;
-        this.userMapper = userMapper;
-        this.roleRepository = roleRepository;
-        this.jwtService = jwtService;
-        this.invalidatedTokenRepository = invalidatedTokenRepository;
-        this.authenticationManager = authenticationManager;
-        this.githubService = githubService;
-        this.googleService = googleService;
-
-    }
+    final EmailService emailService;
+    final UserRepository userRepository;
+    final RoleRepository roleRepository;
+    final BCryptPasswordEncoder passwordEncoder;
+    final UserMapper userMapper;
+    final JwtService jwtService;
+    final InvalidatedTokenRepository invalidatedTokenRepository;
+    final AuthenticationManager authenticationManager;
+    final GithubService githubService;
+    final GoogleService googleService;
 
     @Transactional
     public UserResponse register(@Valid RegisterRequest request) {
@@ -131,7 +114,7 @@ public class AccountService {
         return userMapper.toUserResponse(user);
     }
 
-    private Authentication authenticateUser(LoginRequest loginRequest) {
+    Authentication authenticateUser(LoginRequest loginRequest) {
         try {
             return authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -198,7 +181,7 @@ public class AccountService {
         }
     }
 
-    public APIResponse<UserResponse> updateInfo(String authorization, int userId, UpdateInfoRequest request) {
+    public APIResponse<UserResponse> updateInfo(String authorization, Long userId, UpdateInfoRequest request) {
         APIResponse<UserResponse> apiResponse = new APIResponse<>();
 
         // Get token from Header authorization field
@@ -263,42 +246,40 @@ public class AccountService {
         String url = "http://localhost:5173/activate/" + email + "/" + activateCode;
         String subject = "Complete Your Registration: Activate Your Candlelight.com Account";
 
-        String content = "<html>"
-                + "<head>"
-                + "<style>"
-                + "body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; }"
-                + ".container { background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }"
-                + "h1 { color: #333; }"
-                + ".code { font-size: 24px; font-weight: bold; color: #ffffff; background-color: #007bff; padding: 10px; border-radius: 5px; display: inline-block; }"
-                + ".footer { margin-top: 20px; font-size: 14px; color: #666; }"
-                + "a { color: #007bff; text-decoration: none; }"
-                + "a:hover { text-decoration: underline; }"
-                + "</style>"
-                + "</head>"
-                + "<body>"
-                + "<div class='container'>"
-                + "<h1>Account Activation</h1>"
-                + "<p>To proceed, please enter the following code to activate your account:</p>"
-                + "<div class='code'>"
-                + activateCode
-                + "</div>"
-                + "<p>Or click the link below to activate your account:</p>"
-                + "<p><a href='"
-                + url
-                + "'>"
-                + url
-                + "</a></p>"
-                + "<div class='footer'>Thank you for choosing Candlelight.com!</div>"
-                + "</div>"
-                + "</body>"
-                + "</html>";
+        String content = String.format(
+                """
+                        <html>
+                        <head>
+                            <style>
+                                body { font-family: Arial, sans-serif; background-color: #f9f9f9; margin: 0; padding: 20px; }
+                                .container { background-color: #ffffff; border-radius: 8px; padding: 20px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                                h1 { color: #333; }
+                                .code { font-size: 24px; font-weight: bold; color: #ffffff; background-color: #007bff; padding: 10px; border-radius: 5px; display: inline-block; }
+                                .footer { margin-top: 20px; font-size: 14px; color: #666; }
+                                a { color: #007bff; text-decoration: none; }
+                                a:hover { text-decoration: underline; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='container'>
+                                <h1>Account Activation</h1>
+                                <p>To proceed, please enter the following code to activate your account:</p>
+                                <div class='code'>%s</div>
+                                <p>Or click the link below to activate your account:</p>
+                                <p><a href='%s'>%s</a></p>
+                                <div class='footer'>Thank you for choosing Candlelight.com!</div>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                activateCode, url, url);
 
         emailService.sendEmail("s.gintoki710@gmail.com", email, subject, content);
     }
 
     public JwtResponse outboundAuthenticate(String code, String type) {
         if (type.equals("github")) {
-            var response = githubService.exchangeToken(GH_CLIENT_ID,
+            ExchangeTokenResponse response = githubService.exchangeToken(GH_CLIENT_ID,
                     GH_CLIENT_SECRET,
                     code,
                     GH_REDIRECT_URI);

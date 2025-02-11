@@ -12,7 +12,7 @@ import vn.duclan.candlelight_be.model.User;
 
 @RepositoryRestResource(path = "users")
 @Transactional
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, Long> {
     // spring data jpa auto generate
     public boolean existsByUsername(String username);
 

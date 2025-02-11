@@ -3,6 +3,7 @@ package vn.duclan.candlelight_be.config;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,22 +19,32 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
 import vn.duclan.candlelight_be.exception.springSecurityCustom.CustomAccessDeniedHandler;
 import vn.duclan.candlelight_be.exception.springSecurityCustom.CustomAuthenticationEntryPoint;
 import vn.duclan.candlelight_be.filter.JwtFilter;
 import vn.duclan.candlelight_be.service.UserService;
 
 @Configuration
-@AllArgsConstructor
+@RequiredArgsConstructor
+@Slf4j
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class WebSecurityConfig {
-    private static final String ROLE_ADMIN = "ADMIN";
-    private static final String ROLE_STAFF = "STAFF";
-    private static final String ROLE_USER = "USER";
+    static final String ROLE_ADMIN = "ADMIN";
+    static final String ROLE_STAFF = "STAFF";
+    static final String ROLE_USER = "USER";
 
-    private JwtFilter filter;
-    private CustomAccessDeniedHandler accessDeniedHandler;
-    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+    @Value("${fe.host}")
+    @NonFinal
+    String feHost;
+
+    final JwtFilter filter;
+    final CustomAccessDeniedHandler accessDeniedHandler;
+    final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
@@ -88,7 +99,7 @@ public class WebSecurityConfig {
 
         http.cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration corsConfig = new CorsConfiguration();
-            corsConfig.addAllowedOrigin(Endpoints.FE_HOST);
+            corsConfig.addAllowedOrigin(feHost);
             corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE"));
             corsConfig.addAllowedHeader("*");
             return corsConfig;

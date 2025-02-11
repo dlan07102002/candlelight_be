@@ -21,7 +21,7 @@ public class ReviewController {
     private ReviewService reviewService;
 
     @PostMapping
-    @CrossOrigin(origins = "http://localhost:5173")
+    @CrossOrigin(origins = "${fe.host}")
     public ResponseEntity<?> submitReview(@RequestBody Review review,
             @RequestHeader("Authorization") String authorizationHeader) {
         try {

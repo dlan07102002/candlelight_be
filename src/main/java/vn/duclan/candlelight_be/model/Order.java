@@ -40,7 +40,7 @@ public class Order {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
         @Column(name = "order_id")
-        long orderId;
+        Long orderId;
 
         @Column(name = "created_at")
         Date createdAt;
@@ -82,7 +82,7 @@ public class Order {
         @Transient
         // Can send from client but not seen in response
         @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-        int userId;
+        Long userId;
 
         @Transient
         @JsonProperty(access = JsonProperty.Access.READ_ONLY)

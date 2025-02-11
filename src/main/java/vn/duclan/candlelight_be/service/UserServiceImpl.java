@@ -42,7 +42,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User findById(int id) {
+    public User findById(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new RuntimeException("Username is not valid"));
     }
 

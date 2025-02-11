@@ -3,6 +3,6 @@ package vn.duclan.candlelight_be.model.enums;
 public enum DeliveryStatus {
     PENDING,
     SHIPPED,
-    DELIVERIED,
+    DELIVERED,
     FAILED,
 }

@@ -37,7 +37,8 @@ public class RestConfiguration implements RepositoryRestConfigurer {
          */
     }
 
-    private void disableHttpMethods(Class c, RepositoryRestConfiguration configuration, HttpMethod[] methods) {
+    @SuppressWarnings("unused")
+    private void disableHttpMethods(Class<?> c, RepositoryRestConfiguration configuration, HttpMethod[] methods) {
         configuration
                 .getExposureConfiguration()
                 .forDomainType(c)

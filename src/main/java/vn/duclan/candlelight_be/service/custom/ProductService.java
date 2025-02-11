@@ -1,23 +1,18 @@
 package vn.duclan.candlelight_be.service.custom;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import lombok.RequiredArgsConstructor;
 import vn.duclan.candlelight_be.model.Image;
 import vn.duclan.candlelight_be.model.Product;
 import vn.duclan.candlelight_be.repository.ImageRepository;
 import vn.duclan.candlelight_be.repository.ProductRepository;
 
 @Service
+@RequiredArgsConstructor
 public class ProductService {
-    private final ProductRepository productRepository;
-    private final ImageRepository imageRepository;
-
-    @Autowired
-    public ProductService(ProductRepository productRepository, ImageRepository imageRepository) {
-        this.productRepository = productRepository;
-        this.imageRepository = imageRepository;
-    }
+    final ProductRepository productRepository;
+    final ImageRepository imageRepository;
 
     public void insertImage(Image image) {
         System.out.println(image.getImageData());

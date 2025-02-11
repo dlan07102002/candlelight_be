@@ -1,7 +1,4 @@
-package vn.duclan.candlelight_be.dto.request;
-
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+package vn.duclan.candlelight_be.dto.response;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -17,15 +14,10 @@ import vn.duclan.candlelight_be.model.enums.PaymentStatus;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderStatusRequest {
-    long orderId;
-
-    @Enumerated(EnumType.STRING)
+public class OrderStatusResponse {
+    Long orderId;
+    Long userId;
     DeliveryStatus deliveryStatus;
-
-    @Enumerated(EnumType.STRING)
     PaymentStatus paymentStatus;
-
-    double totalPrice;
 
 }
