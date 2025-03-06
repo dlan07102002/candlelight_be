@@ -15,7 +15,7 @@ import vn.duclan.candlelight_be.service.custom.CategoryService;
 @RestController
 @RequestMapping("/api/category")
 @Slf4j
-@Tag(name = "CategoryController")
+@Tag(name = "Category Controller")
 public class CategoryController {
     private CategoryService categoryService;
 

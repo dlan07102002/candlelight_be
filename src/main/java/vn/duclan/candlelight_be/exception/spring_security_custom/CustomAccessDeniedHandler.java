@@ -1,4 +1,4 @@
-package vn.duclan.candlelight_be.exception.springSecurityCustom;
+package vn.duclan.candlelight_be.exception.spring_security_custom;
 
 import java.io.IOException;
 

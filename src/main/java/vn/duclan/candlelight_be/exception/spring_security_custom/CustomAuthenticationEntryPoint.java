@@ -1,4 +1,4 @@
-package vn.duclan.candlelight_be.exception.springSecurityCustom;
+package vn.duclan.candlelight_be.exception.spring_security_custom;
 
 import java.io.IOException;
 
@@ -26,6 +26,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         ErrorCode errorCode = ErrorCode.UNAUTHENTICATION;
+
         // Tạo một thông báo lỗi trả về
         ObjectMapper mapper = new ObjectMapper();
         response.getWriter()

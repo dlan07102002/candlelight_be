@@ -6,6 +6,9 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,16 +25,13 @@ import vn.duclan.candlelight_be.service.JwtService;
 import vn.duclan.candlelight_be.service.UserService;
 
 @Component
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-    private JwtService jwtService;
-    private UserService userService;
+    final JwtService jwtService;
+    final UserService userService;
 
-    public JwtFilter(JwtService jwtService, UserService userService) {
-        this.jwtService = jwtService;
-        this.userService = userService;
-    }
-
-    private String extractToken(HttpServletRequest request) {
+    String extractToken(HttpServletRequest request) {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             return authHeader.substring(7); // Lấy token từ header
@@ -39,7 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private void authenticateUser(String username, String token, HttpServletRequest request) {
+    void authenticateUser(String username, String token, HttpServletRequest request) {
         UserDetails userDetails = userService.loadUserByUsername(username);
         if (userDetails != null && jwtService.validateToken(token, userDetails, false)) {
             // Tạo đối tượng Authentication nếu token hợp lệ

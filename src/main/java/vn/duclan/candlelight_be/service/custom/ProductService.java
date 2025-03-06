@@ -30,6 +30,7 @@ public class ProductService {
     }
 
     public Product findTopByOrderByProductIdDesc() {
-        return productRepository.findTopByOrderByProductIdDesc();
+        return productRepository.findTopByOrderByProductIdDesc()
+                .orElseThrow(() -> new RuntimeException("Product not found"));
     }
 }

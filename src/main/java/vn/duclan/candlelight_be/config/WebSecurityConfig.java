@@ -1,8 +1,7 @@
 package vn.duclan.candlelight_be.config;
 
-import java.util.Arrays;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -24,8 +23,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import vn.duclan.candlelight_be.exception.springSecurityCustom.CustomAccessDeniedHandler;
-import vn.duclan.candlelight_be.exception.springSecurityCustom.CustomAuthenticationEntryPoint;
+import vn.duclan.candlelight_be.exception.spring_security_custom.CustomAccessDeniedHandler;
+import vn.duclan.candlelight_be.exception.spring_security_custom.CustomAuthenticationEntryPoint;
 import vn.duclan.candlelight_be.filter.JwtFilter;
 import vn.duclan.candlelight_be.service.UserService;
 
@@ -52,7 +51,6 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Autowired
     @ConditionalOnProperty(prefix = "spring", value = "datasource.driverClassName", havingValue = "com.mysql.cj.jdbc.Driver")
     public DaoAuthenticationProvider authenticationProvider(UserService userService) {
         DaoAuthenticationProvider dap = new DaoAuthenticationProvider();
@@ -100,7 +98,7 @@ public class WebSecurityConfig {
         http.cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration corsConfig = new CorsConfiguration();
             corsConfig.addAllowedOrigin(feHost);
-            corsConfig.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE"));
+            corsConfig.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
             corsConfig.addAllowedHeader("*");
             return corsConfig;
         }));
@@ -111,6 +109,7 @@ public class WebSecurityConfig {
 
         // Spring security default enable csrf - Cross-Site Request Forgery
         http.csrf(csrf -> csrf.disable());
+        // handle exception when user access
         http.exceptionHandling(exception -> {
             exception.accessDeniedHandler(accessDeniedHandler);
             exception.authenticationEntryPoint(authenticationEntryPoint);

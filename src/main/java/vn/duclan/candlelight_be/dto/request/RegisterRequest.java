@@ -13,7 +13,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import vn.duclan.candlelight_be.model.enums.Gender;
-import vn.duclan.validator.PasswordConstraints;
 
 @Data
 @NoArgsConstructor
@@ -30,8 +29,8 @@ public class RegisterRequest {
     @Size(min = 3, message = "Username must have at least {min} characters")
     String username;
 
-    @PasswordConstraints(min = 8)
     @NotEmpty(message = "Password can not be empty")
+    @Size(min = 8, message = "Password must have at least {min} characters, including one uppercase letter, one special character, and one number.")
     String password;
 
     @Enumerated(EnumType.STRING)
