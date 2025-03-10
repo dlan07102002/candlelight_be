@@ -24,7 +24,8 @@ public class Endpoints {
                         "/account/refresh",
                         "/api/order-detail", "/api/order-detail/**",
                         "/images", "/images/**",
-                        "/account/outbound/authentication/**"
+                        "/account/outbound/authentication/**",
+                        "/api/v1/redis"
 
         };
 
