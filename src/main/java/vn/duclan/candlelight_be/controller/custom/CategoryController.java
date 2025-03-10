@@ -11,6 +11,7 @@ import vn.duclan.candlelight_be.dto.response.APIResponse;
 import vn.duclan.candlelight_be.exception.ErrorCode;
 import vn.duclan.candlelight_be.model.Category;
 import vn.duclan.candlelight_be.service.custom.CategoryService;
+import vn.duclan.candlelight_be.util.Translator;
 
 @RestController
 @RequestMapping("/api/category")
@@ -29,10 +30,13 @@ public class CategoryController {
 
         try {
             Category result = categoryService.deleteCategoryById(id);
+            apiResponse.setMessage(Translator.toLocale("category.del.success"));
+
             apiResponse.setResult(result);
         } catch (Exception e) {
             apiResponse.setCode(ErrorCode.BAD_REQUEST.getCode());
-            apiResponse.setMessage("FAILED");
+            apiResponse.setMessage(Translator.toLocale("category.del.fail"));
+
         }
 
         return apiResponse;
